@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"> 
+    <!-- android:id="@+id/nav_graph"
+    app:startDestination="@id/fragments/LoginFragment"> -->
+
+    <!-- <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.excuses404.fragments.HomeFragment"
+        android:label="Pokemon List"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_homeFragment_to_detailFragment"
+            app:destination="@id/detailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/detailFragment"
+        android:name="com.example.excuses404.fragments.DetailFragment"
+        android:label="Pokemon Detail"
+        tools:layout="@layout/fragment_detail">
+        <argument
+            android:name="pokemonId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.myapp.LoginFragment"
+        android:label="Login"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_login_to_register"
+            app:destination="@id/registerFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.myapp.RegisterFragment"
+        android:label="Register"
+        tools:layout="@layout/fragment_register" />  -->
+</navigation>
