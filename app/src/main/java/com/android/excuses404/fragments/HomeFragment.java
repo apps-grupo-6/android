@@ -1,91 +1,3 @@
-/*
-package com.example.excuses404.fragments;
-
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.navigation.Navigation;
-
-import com.example.excuses404.data.repository.PokemonServiceCallBack;
-import com.example.excuses404.model.Pokemon;
-import com.example.excuses404.services.PokemonService;
-import com.example.excuses404.R;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-
-import dagger.hilt.android.AndroidEntryPoint;
-
-@AndroidEntryPoint
-public class HomeFragment extends Fragment {
-
-    @Inject
-    public PokemonService pokemonService;
-
-    private ListView listView;
-    private List<String> pokemonDisplayList;
-    private ArrayAdapter<String> adapter;
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_home, container, false);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        
-        listView = view.findViewById(R.id.listView);
-        pokemonDisplayList = new ArrayList<>();
-        adapter = new ArrayAdapter<>(requireContext(), 
-                                   android.R.layout.simple_list_item_1,
-                                   pokemonDisplayList);
-        listView.setAdapter(adapter);
-        loadPokemons();
-        
-        listView.setOnItemClickListener((parent, v, position, id) -> {
-            String selectedPokemon = pokemonDisplayList.get(position);
-            String pokemonName = selectedPokemon.split(" - ")[0];
-            
-            Bundle args = new Bundle();
-            args.putString("pokemonId", pokemonName);
-            Navigation.findNavController(view).navigate(R.id.action_homeFragment_to_detailFragment, args);
-        });
-    }
-
-    private void loadPokemons() {
-        pokemonService.getAllPokemons(new PokemonServiceCallBack() {
-            @Override
-            public void onSuccess(List<Pokemon> pokemons) {
-                pokemonDisplayList.clear();
-                pokemonDisplayList.addAll(pokemons.stream()
-                    .map(pokemon -> pokemon.getName() + " - " + pokemon.getType())
-                    .collect(Collectors.toList()));
-                requireActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                requireActivity().runOnUiThread(() -> Toast.makeText(requireContext(),
-                    "Error al cargar los Pokemon: " + error.getMessage(),
-                    Toast.LENGTH_LONG).show());
-            }
-        });
-    }
-}
-*/
 package com.android.excuses404.fragments;
 
 import android.os.Bundle;
@@ -127,7 +39,7 @@ public class HomeFragment extends Fragment {
         adapter = new SessionsAdapter(new SessionsAdapter.OnAction() {
             @Override public void onReserve(ClassSession s) { vm.reserve(s); }
             @Override public void onConfirm(ClassSession s) { vm.confirm(s); }
-            @Override public void onCheckIn(ClassSession s) { vm.checkIn(s); }
+            @Override public void onCancel(ClassSession s)  { vm.cancel(s); }
         });
         rv.setAdapter(adapter);
 
@@ -143,11 +55,9 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        // primera carga
         vm.refresh();
     }
 
-    // ---------- Adapter ----------
     static class SessionDiff extends DiffUtil.ItemCallback<ClassSession> {
         @Override public boolean areItemsTheSame(@NonNull ClassSession o, @NonNull ClassSession n) { return o.getId().equals(n.getId()); }
         @Override public boolean areContentsTheSame(@NonNull ClassSession o, @NonNull ClassSession n) {
@@ -165,7 +75,7 @@ public class HomeFragment extends Fragment {
         interface OnAction {
             void onReserve(ClassSession s);
             void onConfirm(ClassSession s);
-            void onCheckIn(ClassSession s);
+            void onCancel(ClassSession s);
         }
         private final OnAction onAction;
         SessionsAdapter(OnAction onAction){ super(new SessionDiff()); this.onAction = onAction; }
@@ -179,7 +89,7 @@ public class HomeFragment extends Fragment {
 
         static class VH extends RecyclerView.ViewHolder {
             private final TextView tvTitle, tvCoach, tvTime;
-            private final Button btnReserve, btnConfirm, btnCheckIn;
+            private final Button btnReserve, btnConfirm, btnCancel;
             private final SimpleDateFormat fmt = new SimpleDateFormat("dd/MM HH:mm", Locale.getDefault());
             private final OnAction onAction;
 
@@ -191,7 +101,7 @@ public class HomeFragment extends Fragment {
                 tvTime  = itemView.findViewById(R.id.tvTime);
                 btnReserve = itemView.findViewById(R.id.btnReserve);
                 btnConfirm = itemView.findViewById(R.id.btnConfirm);
-                btnCheckIn = itemView.findViewById(R.id.btnCheckIn);
+                btnCancel  = itemView.findViewById(R.id.btnCancel);
             }
 
             void bind(ClassSession s){
@@ -199,16 +109,13 @@ public class HomeFragment extends Fragment {
                 tvCoach.setText("Coach: " + s.getCoach());
                 tvTime.setText(fmt.format(new Date(s.getStartsAt())) + " - " + fmt.format(new Date(s.getEndsAt())));
 
-                long now = System.currentTimeMillis();
-                boolean inWindow = now >= s.getStartsAt() - 15*60_000L && now <= s.getEndsAt() + 15*60_000L;
-
                 btnReserve.setEnabled(!s.isReserved());
                 btnConfirm.setEnabled(s.isReserved() && !s.isConfirmed());
-                btnCheckIn.setEnabled(s.isConfirmed() && inWindow);
+                btnCancel.setEnabled(s.isReserved());
 
                 btnReserve.setOnClickListener(v -> onAction.onReserve(s));
                 btnConfirm.setOnClickListener(v -> onAction.onConfirm(s));
-                btnCheckIn.setOnClickListener(v -> onAction.onCheckIn(s));
+                btnCancel.setOnClickListener(v -> onAction.onCancel(s));
             }
         }
     }

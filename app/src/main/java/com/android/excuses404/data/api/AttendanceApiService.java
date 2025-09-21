@@ -2,25 +2,29 @@ package com.android.excuses404.data.api;
 
 import com.android.excuses404.data.api.dto.AttendanceDTO;
 import com.android.excuses404.data.api.dto.ClassSessionDTO;
-import com.android.excuses404.data.api.dto.CheckInReq;
-import com.android.excuses404.data.api.dto.ConfirmReq;
-import com.android.excuses404.data.api.dto.ReserveReq;
 import java.util.List;
 import retrofit2.Call;
-import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
 
 public interface AttendanceApiService {
-    @GET("sessions")
-    Call<List<ClassSessionDTO>> fetchSessions();
 
-    @POST("attendance/reserve")
-    Call<AttendanceDTO> reserve(@Body ReserveReq body);
+    // [GET] /classes/upcoming  → trae futuras clases del usuario logueado (según JWT)
+    @GET("classes/upcoming")
+    Call<List<ClassSessionDTO>> fetchUpcomingClasses();
 
-    @POST("attendance/confirm")
-    Call<AttendanceDTO> confirm(@Body ConfirmReq body);
+    // [POST] /classes/{id}/participant  → reservar / unirse a la clase
+    @POST("classes/{id}/participant")
+    Call<AttendanceDTO> reserve(@Path("id") String classId);
 
-    @POST("attendance/checkin")
-    Call<AttendanceDTO> checkIn(@Body CheckInReq body);
+    // [DELETE] /classes/{id}/participant → cancelar reserva
+    @DELETE("classes/{id}/participant")
+    Call<Void> cancel(@Path("id") String classId);
+
+    // [PUT] /classes/{id}/participant/confirm → confirmar asistencia
+    @PUT("classes/{id}/participant/confirm")
+    Call<AttendanceDTO> confirm(@Path("id") String classId);
 }

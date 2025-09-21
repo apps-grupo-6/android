@@ -3,8 +3,11 @@ package com.android.excuses404.data.repository;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.android.excuses404.data.api.AttendanceApiService;
-import com.android.excuses404.data.api.dto.*;
-import com.android.excuses404.models.*;
+import com.android.excuses404.data.api.dto.AttendanceDTO;
+import com.android.excuses404.data.api.dto.ClassSessionDTO;
+import com.android.excuses404.models.Attendance;
+import com.android.excuses404.models.AttendanceStatus;
+import com.android.excuses404.models.ClassSession;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
@@ -27,7 +30,7 @@ public class AttendanceRepository {
     public LiveData<List<Attendance>> observeMyAttendance() { return myAttendance; }
 
     public void refreshSessions() {
-        api.fetchSessions().enqueue(new Callback<List<ClassSessionDTO>>() {
+        api.fetchUpcomingClasses().enqueue(new Callback<List<ClassSessionDTO>>() {
             @Override public void onResponse(Call<List<ClassSessionDTO>> c, Response<List<ClassSessionDTO>> r) {
                 if (!r.isSuccessful() || r.body()==null) return;
                 List<ClassSession> mapped = new ArrayList<>();
@@ -36,16 +39,15 @@ public class AttendanceRepository {
                 }
                 sessions.postValue(mapped);
             }
-            @Override public void onFailure(Call<List<ClassSessionDTO>> c, Throwable t) { /* log/notify */ }
+            @Override public void onFailure(Call<List<ClassSessionDTO>> c, Throwable t) { }
         });
     }
 
-    public void reserve(ClassSession s, int userId) {
-        api.reserve(new ReserveReq(s.getId(), userId)).enqueue(new Callback<AttendanceDTO>() {
+    public void reserve(ClassSession s) {
+        api.reserve(s.getId()).enqueue(new Callback<AttendanceDTO>() {
             @Override public void onResponse(Call<AttendanceDTO> c, Response<AttendanceDTO> r) {
                 if (!r.isSuccessful() || r.body()==null) return;
-
-                // update sessions (reserved = true)
+                // actualizar lista en memoria
                 List<ClassSession> list = new ArrayList<>(sessions.getValue());
                 for (int i=0;i<list.size();i++) if (list.get(i).getId().equals(s.getId())) {
                     list.set(i, s.withReserved(true));
@@ -53,7 +55,7 @@ public class AttendanceRepository {
                 }
                 sessions.postValue(list);
 
-                // push to myAttendance
+                // opcional: agregar a historial local
                 AttendanceDTO dto = r.body();
                 List<Attendance> att = new ArrayList<>(myAttendance.getValue());
                 att.add(new Attendance(dto.id, dto.sessionId, dto.userId,
@@ -64,8 +66,26 @@ public class AttendanceRepository {
         });
     }
 
-    public void confirm(ClassSession s, int userId) {
-        api.confirm(new ConfirmReq(s.getId(), userId)).enqueue(new Callback<AttendanceDTO>() {
+    public void cancel(ClassSession s) {
+        api.cancel(s.getId()).enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> c, Response<Void> r) {
+                if (!r.isSuccessful()) return;
+                List<ClassSession> list = new ArrayList<>(sessions.getValue());
+                for (int i=0;i<list.size();i++) if (list.get(i).getId().equals(s.getId())) {
+                    // al cancelar, eliminamos flags
+                    list.set(i, new ClassSession(
+                            s.getId(), s.getTitle(), s.getStartsAt(), s.getEndsAt(),
+                            s.getCoach(), s.getCapacity(), false, false));
+                    break;
+                }
+                sessions.postValue(list);
+            }
+            @Override public void onFailure(Call<Void> c, Throwable t) { }
+        });
+    }
+
+    public void confirm(ClassSession s) {
+        api.confirm(s.getId()).enqueue(new Callback<AttendanceDTO>() {
             @Override public void onResponse(Call<AttendanceDTO> c, Response<AttendanceDTO> r) {
                 if (!r.isSuccessful() || r.body()==null) return;
                 List<ClassSession> list = new ArrayList<>(sessions.getValue());
@@ -74,20 +94,6 @@ public class AttendanceRepository {
                     break;
                 }
                 sessions.postValue(list);
-            }
-            @Override public void onFailure(Call<AttendanceDTO> c, Throwable t) { }
-        });
-    }
-
-    public void checkIn(ClassSession s, int userId) {
-        api.checkIn(new CheckInReq(s.getId(), userId)).enqueue(new Callback<AttendanceDTO>() {
-            @Override public void onResponse(Call<AttendanceDTO> c, Response<AttendanceDTO> r) {
-                if (!r.isSuccessful() || r.body()==null) return;
-                AttendanceDTO dto = r.body();
-                List<Attendance> att = new ArrayList<>(myAttendance.getValue());
-                att.add(new Attendance(dto.id, dto.sessionId, dto.userId,
-                        AttendanceStatus.PRESENT, dto.timestamp));
-                myAttendance.postValue(att);
             }
             @Override public void onFailure(Call<AttendanceDTO> c, Throwable t) { }
         });

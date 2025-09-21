@@ -43,9 +43,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"/>
 
+
         <Button
-            android:id="@+id/btnCheckIn"
-            android:text="Check-in"
+            android:id="@+id/btnCancel"
+            android:text="Cancelar"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"

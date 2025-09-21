@@ -12,7 +12,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 @HiltViewModel
 public class AttendanceViewModel extends ViewModel {
     private final AttendanceRepository repo;
-    private final int userId =  /* tomalo de tu User (p.ej. SessionManager) */  1;
 
     @Inject public AttendanceViewModel(AttendanceRepository repo){ this.repo = repo; }
 
@@ -20,7 +19,7 @@ public class AttendanceViewModel extends ViewModel {
     public LiveData<List<Attendance>> myAttendance(){ return repo.observeMyAttendance(); }
 
     public void refresh(){ repo.refreshSessions(); }
-    public void reserve(ClassSession s){ repo.reserve(s, userId); }
-    public void confirm(ClassSession s){ repo.confirm(s, userId); }
-    public void checkIn(ClassSession s){ repo.checkIn(s, userId); }
+    public void reserve(ClassSession s){ repo.reserve(s); }
+    public void cancel(ClassSession s){ repo.cancel(s); }
+    public void confirm(ClassSession s){ repo.confirm(s); }
 }
