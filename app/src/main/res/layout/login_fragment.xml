@@ -34,10 +34,23 @@
         android:layout_height="wrap_content"/>
 
     <TextView
+        android:id="@+id/tvForgotPassword"
+        android:text="¿Olvidaste tu contraseña?"
+        android:textColor="@android:color/holo_blue_dark"
+        android:layout_marginTop="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:padding="8dp"
+        android:textSize="14sp"/>
+
+    <TextView
         android:id="@+id/tvGoRegister"
         android:text="¿No tienes cuenta? Regístrate"
         android:textColor="@android:color/holo_blue_dark"
         android:layout_marginTop="20dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:padding="8dp"/>
 </LinearLayout>
