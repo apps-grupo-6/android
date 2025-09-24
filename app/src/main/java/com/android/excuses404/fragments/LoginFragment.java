@@ -35,6 +35,8 @@ import static android.content.Context.MODE_PRIVATE;
 import static com.android.excuses404.utils.Constants.IS_USER_LOGGED_IN;
 import static com.android.excuses404.utils.Constants.USER_DATA;
 
+import com.android.excuses404.utils.ErrorDialog;
+
 @AndroidEntryPoint
 public class LoginFragment extends Fragment {
 
@@ -42,7 +44,7 @@ public class LoginFragment extends Fragment {
 
     private EditText etUser, etPassword;
     private Button btnLogin;
-    private TextView tvGoRegister;
+    private TextView tvGoRegister, tvForgotPassword;
 
     @Inject
     UserApiService userApiService;
@@ -50,14 +52,15 @@ public class LoginFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.login_fragment, container, false);
 
         etUser = view.findViewById(R.id.etUser);
         etPassword = view.findViewById(R.id.etPassword);
         btnLogin = view.findViewById(R.id.btnLogin);
         tvGoRegister = view.findViewById(R.id.tvGoRegister);
+        tvForgotPassword = view.findViewById(R.id.tvForgotPassword);
 
         btnLogin.setOnClickListener(v -> {
             String user = etUser.getText().toString().trim();
@@ -73,26 +76,34 @@ public class LoginFragment extends Fragment {
             call.enqueue(new Callback<>() {
                 @Override
                 public void onResponse(Call<UserLoginResponse> call, Response<UserLoginResponse> response) {
-                    UserLoginResponse loginResponse = response.body();
-                    String code = loginResponse.getCode();
-                    Log.d("LoginFragment", "Backend response: "+ code + " - "+ loginResponse.getDescription());
+                    if (response.isSuccessful() && response.body() != null) {
+                        UserLoginResponse loginResponse = response.body();
+                        String code = loginResponse.getCode();
+                        Log.d("LoginFragment", "Backend response: " + code + " - " + loginResponse.getDescription());
 
-                    if (response.isSuccessful() && code.equals("0200")) { // if everything is ok
-                        SharedPreferences prefs = getActivity().getSharedPreferences(USER_DATA, MODE_PRIVATE);
-                        prefs.edit().putBoolean(IS_USER_LOGGED_IN, true).apply();
+                        if (code.equals("0200")) {
+                            SharedPreferences prefs = getActivity().getSharedPreferences(USER_DATA, MODE_PRIVATE);
+                            prefs.edit().putBoolean(IS_USER_LOGGED_IN, true).apply();
 
-                        Intent intent = new Intent(getActivity(), HomeActivity.class);
-                        startActivity(intent);
-                        getActivity().finish(); // keep it. Without it, user can go back to the login panel
+                            Intent intent = new Intent(getActivity(), HomeActivity.class);
+                            startActivity(intent);
+                            getActivity().finish();
+                        } else {
+                            ErrorDialog.showLoginError(getActivity());
+                            Log.e("LoginFragment", "Error en login - código: " + code);
+                        }
                     } else {
-                        Toast.makeText(getActivity(), "Error en la respuesta del servidor", Toast.LENGTH_LONG).show();
-                        Log.e("LoginFragment", "Error en login: " + response.code());
+                        ErrorDialog.showLoginError(getActivity());
+                        Log.e("LoginFragment",
+                                "Error en login: " + response.code() + " - Response body is null or unsuccessful");
                     }
                 }
 
                 @Override
                 public void onFailure(Call<UserLoginResponse> call, Throwable t) {
-                    Toast.makeText(getActivity(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    ErrorDialog.showConnectionError(getActivity(), () -> {
+                        btnLogin.performClick();
+                    });
                     Log.e("LoginFragment", "onFailure login", t);
                 }
             });
@@ -101,6 +112,12 @@ public class LoginFragment extends Fragment {
         tvGoRegister.setOnClickListener(v -> {
             if (getActivity() instanceof AuthActivity) {
                 ((AuthActivity) getActivity()).loadFragment(new RegisterFragment());
+            }
+        });
+
+        tvForgotPassword.setOnClickListener(v -> {
+            if (getActivity() instanceof AuthActivity) {
+                ((AuthActivity) getActivity()).loadFragment(new ForgotPasswordFragment());
             }
         });
 
