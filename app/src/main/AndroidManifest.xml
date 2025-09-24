@@ -38,6 +38,8 @@
             android:name=".activities.HomeActivity"
             android:exported="false"
             android:theme="@style/Theme.Excuses404" />
+        <activity android:name=".activities.ClassesActivity"/>
+
 
         <!-- <activity
             android:name=".PokemonDetailActivity" // activity name
