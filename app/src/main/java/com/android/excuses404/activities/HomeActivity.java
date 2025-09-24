@@ -23,20 +23,10 @@ public class HomeActivity extends AppCompatActivity {
     @Inject
     TokenRepository tokenRepository;
 
-    private Button btnLogout;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
-        btnLogout = findViewById(R.id.btnLogout);
-
-        btnLogout.setOnClickListener(v -> {
-            tokenRepository.clearAll();
-
-            redirectToAuth();
-        });
 
         if (tokenRepository.hasToken()) {
             String token = tokenRepository.getToken();
