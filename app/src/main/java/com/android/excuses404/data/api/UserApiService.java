@@ -1,5 +1,7 @@
 package com.android.excuses404.data.api;
 
+import com.android.excuses404.data.api.model.ConfirmAccountRequest;
+import com.android.excuses404.data.api.model.ConfirmAccountResponse;
 import com.android.excuses404.data.api.model.OtpVerificationRequest;
 import com.android.excuses404.data.api.model.OtpVerificationResponse;
 import com.android.excuses404.data.api.model.ResendOtpRequest;
@@ -21,6 +23,9 @@ public interface UserApiService {
 
     @POST("users/")
     Call<UserRegisterResponse> register(@Body UserRegisterRequest registerRequest);
+
+    @POST("auth/confirmAccount")
+    Call<ConfirmAccountResponse> confirmAccount(@Body ConfirmAccountRequest confirmRequest);
 
     @POST("auth/verify")
     Call<OtpVerificationResponse> verifyOtp(@Body OtpVerificationRequest otpRequest);
