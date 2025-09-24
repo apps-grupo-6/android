@@ -21,6 +21,8 @@ import com.android.excuses404.R;
 import com.android.excuses404.activities.AuthActivity;
 import com.android.excuses404.activities.HomeActivity;
 import com.android.excuses404.data.api.UserApiService;
+import com.android.excuses404.data.api.model.ConfirmAccountRequest;
+import com.android.excuses404.data.api.model.ConfirmAccountResponse;
 import com.android.excuses404.data.api.model.OtpVerificationRequest;
 import com.android.excuses404.data.api.model.OtpVerificationResponse;
 import com.android.excuses404.data.api.model.ResendOtpRequest;
@@ -110,80 +112,11 @@ public class OtpFragment extends Fragment {
                 return;
             }
 
-            // Crear request y enviar al servidor
-            OtpVerificationRequest otpRequest = new OtpVerificationRequest(username, otpCode);
-            Call<OtpVerificationResponse> call = userApiService.verifyOtp(otpRequest);
-
-            Toast.makeText(getActivity(), "Verificando código...", Toast.LENGTH_SHORT).show();
-
-            call.enqueue(new Callback<OtpVerificationResponse>() {
-                @Override
-                public void onResponse(Call<OtpVerificationResponse> call, Response<OtpVerificationResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        OtpVerificationResponse otpResponse = response.body();
-                        Log.d("OtpFragment",
-                                "Backend response: " + otpResponse.getCode() + " - " + otpResponse.getDescription());
-                        Log.d("OtpFragment", "isPasswordReset: " + isPasswordReset);
-                        Log.d("OtpFragment", "Response body completo recibido");
-                        Log.d("OtpFragment", "Data object: " + (otpResponse.getData() != null ? "presente" : "null"));
-                        if (otpResponse.getData() != null) {
-                            Log.d("OtpFragment", "Data type: " + otpResponse.getData().getType());
-                            Log.d("OtpFragment", "Data message: " + otpResponse.getData().getMessage());
-                        }
-
-                        if (isPasswordReset) {
-                            Toast.makeText(getActivity(), "¡Código verificado! Ahora puedes cambiar tu contraseña",
-                                    Toast.LENGTH_LONG).show();
-
-                            String resetToken = otpResponse.getReset_token();
-                            Log.d("OtpFragment", "Reset token recibido: '" + resetToken + "'");
-                            Log.d("OtpFragment", "Reset token es null: " + (resetToken == null));
-                            Log.d("OtpFragment",
-                                    "Reset token está vacío: " + (resetToken != null && resetToken.isEmpty()));
-
-                            if (resetToken != null && !resetToken.isEmpty() && getActivity() instanceof AuthActivity) {
-                                ((AuthActivity) getActivity())
-                                        .loadFragment(ChangePasswordFragment.newInstance(username, resetToken));
-                                Log.d("OtpFragment",
-                                        "Código verificado para recuperación de contraseña. Reset token: "
-                                                + resetToken);
-                            } else {
-                                Log.e("OtpFragment",
-                                        "Reset token es null o vacío, no se puede continuar con el cambio de contraseña");
-                                Log.e("OtpFragment", "Respuesta completa del servidor: " + otpResponse.getCode() + " - "
-                                        + otpResponse.getDescription());
-                                ErrorDialog.showGenericError(getActivity(),
-                                        "Error al procesar la verificación. Intenta nuevamente.");
-                            }
-                        } else {
-                            SharedPreferences prefs = getActivity().getSharedPreferences(USER_DATA, MODE_PRIVATE);
-                            prefs.edit().putBoolean(IS_USER_LOGGED_IN, true).apply();
-
-                            Toast.makeText(getActivity(), "¡Verificación exitosa! Bienvenido", Toast.LENGTH_LONG)
-                                    .show();
-
-                            Intent intent = new Intent(getActivity(), HomeActivity.class);
-                            startActivity(intent);
-                            getActivity().finish();
-                        }
-
-                    } else {
-                        ErrorDialog.showOtpError(getActivity(), () -> {
-                            etOtpCode.setText("");
-                            etOtpCode.requestFocus();
-                        });
-                        Log.e("OtpFragment", "Error en verificación: " + response.code());
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<OtpVerificationResponse> call, Throwable t) {
-                    ErrorDialog.showConnectionError(getActivity(), () -> {
-                        btnVerifyOtp.performClick();
-                    });
-                    Log.e("OtpFragment", "onFailure verificación", t);
-                }
-            });
+            if (isPasswordReset) {
+                verifyOtpForPasswordReset(otpCode);
+            } else {
+                confirmAccountForRegistration(otpCode);
+            }
         });
 
         tvResendCode.setOnClickListener(v -> {
@@ -203,6 +136,106 @@ public class OtpFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void confirmAccountForRegistration(String otpCode) {
+        ConfirmAccountRequest confirmRequest = new ConfirmAccountRequest(username, otpCode);
+        Call<ConfirmAccountResponse> call = userApiService.confirmAccount(confirmRequest);
+
+        Toast.makeText(getActivity(), "Verificando código...", Toast.LENGTH_SHORT).show();
+
+        call.enqueue(new Callback<ConfirmAccountResponse>() {
+            @Override
+            public void onResponse(Call<ConfirmAccountResponse> call, Response<ConfirmAccountResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ConfirmAccountResponse confirmResponse = response.body();
+                    Log.d("OtpFragment", "ConfirmAccount response: " + confirmResponse.getCode() + " - "
+                            + confirmResponse.getDescription());
+
+                    // Marcar usuario como logueado y ir al Home
+                    SharedPreferences prefs = getActivity().getSharedPreferences(USER_DATA, MODE_PRIVATE);
+                    prefs.edit().putBoolean(IS_USER_LOGGED_IN, true).apply();
+
+                    Toast.makeText(getActivity(), "¡Cuenta confirmada exitosamente! Bienvenido", Toast.LENGTH_LONG)
+                            .show();
+
+                    Intent intent = new Intent(getActivity(), HomeActivity.class);
+                    startActivity(intent);
+                    getActivity().finish();
+
+                } else {
+                    ErrorDialog.showOtpError(getActivity(), () -> {
+                        etOtpCode.setText("");
+                        etOtpCode.requestFocus();
+                    });
+                    Log.e("OtpFragment", "Error en confirmación de cuenta: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ConfirmAccountResponse> call, Throwable t) {
+                ErrorDialog.showConnectionError(getActivity(), () -> {
+                    confirmAccountForRegistration(otpCode);
+                });
+                Log.e("OtpFragment", "onFailure confirmación de cuenta", t);
+            }
+        });
+    }
+
+    private void verifyOtpForPasswordReset(String otpCode) {
+        OtpVerificationRequest otpRequest = new OtpVerificationRequest(username, otpCode);
+        Call<OtpVerificationResponse> call = userApiService.verifyOtp(otpRequest);
+
+        Toast.makeText(getActivity(), "Verificando código...", Toast.LENGTH_SHORT).show();
+
+        call.enqueue(new Callback<OtpVerificationResponse>() {
+            @Override
+            public void onResponse(Call<OtpVerificationResponse> call, Response<OtpVerificationResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    OtpVerificationResponse otpResponse = response.body();
+                    Log.d("OtpFragment",
+                            "Verify response: " + otpResponse.getCode() + " - " + otpResponse.getDescription());
+                    Log.d("OtpFragment", "Data object: " + (otpResponse.getData() != null ? "presente" : "null"));
+
+                    if (otpResponse.getData() != null) {
+                        Log.d("OtpFragment", "Data type: " + otpResponse.getData().getType());
+                        Log.d("OtpFragment", "Data message: " + otpResponse.getData().getMessage());
+                    }
+
+                    Toast.makeText(getActivity(), "¡Código verificado! Ahora puedes cambiar tu contraseña",
+                            Toast.LENGTH_LONG).show();
+
+                    String resetToken = otpResponse.getReset_token();
+                    Log.d("OtpFragment", "Reset token recibido: '" + resetToken + "'");
+
+                    if (resetToken != null && !resetToken.isEmpty() && getActivity() instanceof AuthActivity) {
+                        ((AuthActivity) getActivity())
+                                .loadFragment(ChangePasswordFragment.newInstance(username, resetToken));
+                        Log.d("OtpFragment", "Navegando a cambio de contraseña con reset token: " + resetToken);
+                    } else {
+                        Log.e("OtpFragment",
+                                "Reset token es null o vacío, no se puede continuar con el cambio de contraseña");
+                        ErrorDialog.showGenericError(getActivity(),
+                                "Error al procesar la verificación. Intenta nuevamente.");
+                    }
+
+                } else {
+                    ErrorDialog.showOtpError(getActivity(), () -> {
+                        etOtpCode.setText("");
+                        etOtpCode.requestFocus();
+                    });
+                    Log.e("OtpFragment", "Error en verificación para reset: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<OtpVerificationResponse> call, Throwable t) {
+                ErrorDialog.showConnectionError(getActivity(), () -> {
+                    verifyOtpForPasswordReset(otpCode);
+                });
+                Log.e("OtpFragment", "onFailure verificación para reset", t);
+            }
+        });
     }
 
     private void resendOtpCode() {
