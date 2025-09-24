@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.android.excuses404"
-        minSdk = 30
+        minSdk = 34
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
