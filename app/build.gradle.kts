@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.android.excuses404"
-        minSdk = 34
+        minSdk = 30
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -58,4 +58,9 @@ dependencies {
     // Navigation
     implementation("androidx.navigation:navigation-fragment:2.7.7")
     implementation("androidx.navigation:navigation-ui:2.7.7")
+    
+    // Biometric Config
+    implementation("androidx.security:security-crypto:1.1.0-alpha03")
+    
+    implementation("androidx.biometric:biometric:1.1.0")
 }

@@ -1,7 +1,6 @@
 package com.android.excuses404.fragments;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,11 +17,12 @@ import androidx.fragment.app.Fragment;
 
 import com.android.excuses404.activities.AuthActivity;
 import com.android.excuses404.activities.HomeActivity;
+import com.android.excuses404.core.repository.TokenRepository;
 import com.android.excuses404.data.api.UserApiService;
 import com.android.excuses404.data.api.model.UserLoginRequest;
 import com.android.excuses404.data.api.model.UserLoginResponse;
 import com.android.excuses404.R;
-import com.google.gson.Gson;
+import com.android.excuses404.utils.ErrorDialog;
 
 import javax.inject.Inject;
 
@@ -30,12 +30,6 @@ import dagger.hilt.android.AndroidEntryPoint;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
-import static android.content.Context.MODE_PRIVATE;
-import static com.android.excuses404.utils.Constants.IS_USER_LOGGED_IN;
-import static com.android.excuses404.utils.Constants.USER_DATA;
-
-import com.android.excuses404.utils.ErrorDialog;
 
 @AndroidEntryPoint
 public class LoginFragment extends Fragment {
@@ -48,6 +42,9 @@ public class LoginFragment extends Fragment {
 
     @Inject
     UserApiService userApiService;
+
+    @Inject
+    TokenRepository tokenRepository;
 
     @Nullable
     @Override
@@ -82,8 +79,13 @@ public class LoginFragment extends Fragment {
                         Log.d("LoginFragment", "Backend response: " + code + " - " + loginResponse.getDescription());
 
                         if (code.equals("0200")) {
-                            SharedPreferences prefs = getActivity().getSharedPreferences(USER_DATA, MODE_PRIVATE);
-                            prefs.edit().putBoolean(IS_USER_LOGGED_IN, true).apply();
+                            if (loginResponse.getToken() != null) {
+                                tokenRepository.saveToken(loginResponse.getToken());
+                            }
+                            if (loginResponse.getUserId() != null) {
+                                tokenRepository.saveUserId(loginResponse.getUserId());
+                            }
+                            tokenRepository.saveLoginStatus(true);
 
                             Intent intent = new Intent(getActivity(), HomeActivity.class);
                             startActivity(intent);
