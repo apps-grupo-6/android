@@ -1,56 +1,129 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="20dp"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
+    android:padding="24dp"
+    android:gravity="center_vertical">
 
-    <TextView
-        android:layout_width="match_parent"
+    <!-- Title Excuses 404 -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardLogo"
+        style="@style/AppCard"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Excuses 404"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:padding="16dp"
-        android:gravity="center" />
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="48dp"
+        app:layout_constraintBottom_toTopOf="@id/tilUser"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintVertical_bias="0.3">
 
-    <EditText
-        android:id="@+id/etUser"
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="28dp"
+            android:text="Excuses 404"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:textColor="?attr/colorOnSurface" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilUser"
+        style="@style/AppTextInputLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:hint="Usuario"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        app:layout_constraintBottom_toTopOf="@id/tilPassword"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cardLogo"
+        app:startIconDrawable="@drawable/ic_person_24">
 
-    <EditText
-        android:id="@+id/etPassword"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etUser"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:textColor="?attr/colorOnSurface" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Password -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilPassword"
+        style="@style/AppTextInputLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
         android:hint="Contraseña"
-        android:inputType="textPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        app:endIconMode="password_toggle"
+        app:layout_constraintBottom_toTopOf="@id/btnLogin"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tilUser"
+        app:startIconDrawable="@drawable/ic_lock_24">
 
-    <Button
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:textColor="?attr/colorOnSurface" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Login -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnLogin"
+        style="@style/AppButton"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginBottom="24dp"
         android:text="Iniciar Sesión"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        app:layout_constraintBottom_toTopOf="@id/tvForgotPassword"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tilPassword" />
 
-    <TextView
+    <!-- Forgot Password -->
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvForgotPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="12dp"
         android:text="¿Olvidaste tu contraseña?"
-        android:textColor="@android:color/holo_blue_dark"
-        android:layout_marginTop="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="8dp"
-        android:textSize="14sp"/>
+        android:textAppearance="?attr/textAppearanceBody2"
+        android:textColor="?attr/colorPrimary"
+        app:layout_constraintBottom_toTopOf="@id/tvGoRegister"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnLogin" />
 
-    <TextView
+    <!-- Register -->
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvGoRegister"
-        android:text="¿No tienes cuenta? Regístrate"
-        android:textColor="@android:color/holo_blue_dark"
-        android:layout_marginTop="20dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="8dp"/>
-</LinearLayout>
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="12dp"
+        android:text="¿No tienes cuenta? Regístrate"
+        android:textAppearance="?attr/textAppearanceBody2"
+        android:textColor="?attr/colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvForgotPassword" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

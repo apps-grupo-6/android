@@ -54,9 +54,7 @@ public class ErrorDialog {
 
             TextView tvErrorTitle = dialogView.findViewById(R.id.tvErrorTitle);
             TextView tvErrorMessage = dialogView.findViewById(R.id.tvErrorMessage);
-            Button btnErrorRetry = dialogView.findViewById(R.id.btnErrorRetry);
             Button btnErrorOk = dialogView.findViewById(R.id.btnErrorOk);
-            View layoutRetryButton = dialogView.findViewById(R.id.layoutRetryButton);
 
             tvErrorTitle.setText(title);
             tvErrorMessage.setText(message);
@@ -72,16 +70,6 @@ public class ErrorDialog {
                     onDismissListener.run();
                 }
             });
-
-            if (showRetryButton && retryListener != null) {
-                layoutRetryButton.setVisibility(View.VISIBLE);
-                btnErrorRetry.setOnClickListener(v -> {
-                    dialog.dismiss();
-                    retryListener.onRetry();
-                });
-            } else {
-                layoutRetryButton.setVisibility(View.GONE);
-            }
 
             return dialog;
         }

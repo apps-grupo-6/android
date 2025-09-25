@@ -42,28 +42,6 @@
         android:orientation="vertical"
         android:gravity="center">
 
-        <LinearLayout
-            android:id="@+id/layoutRetryButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginBottom="8dp"
-            android:visibility="gone">
-
-            <Button
-                android:id="@+id/btnErrorRetry"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:text="Reintentar"
-                android:textColor="@android:color/white"
-                android:backgroundTint="@android:color/holo_blue_dark"
-                style="@style/Widget.AppCompat.Button" />
-
-        </LinearLayout>
-
         <Button
             android:id="@+id/btnErrorOk"
             android:layout_width="match_parent"
