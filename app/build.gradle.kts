@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.android.excuses404"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.android.excuses404"
-        minSdk = 24
-        targetSdk = 34
+        minSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -32,9 +32,10 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
+    buildToolsVersion = "30.0.3"
 }
 
 dependencies {
@@ -58,9 +59,6 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
     
-    // CardView for catalog layout
-    implementation("androidx.cardview:cardview:1.0.0")
-
     // Navigation
     implementation("androidx.navigation:navigation-fragment:2.7.7")
     implementation("androidx.navigation:navigation-ui:2.7.7")

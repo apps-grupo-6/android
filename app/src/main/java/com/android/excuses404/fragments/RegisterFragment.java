@@ -17,8 +17,6 @@ import androidx.fragment.app.Fragment;
 import com.android.excuses404.R;
 import com.android.excuses404.activities.AuthActivity;
 import com.android.excuses404.data.api.UserApiService;
-import com.android.excuses404.data.api.model.ResendOtpRequest;
-import com.android.excuses404.data.api.model.ResendOtpResponse;
 import com.android.excuses404.data.api.model.UserRegisterRequest;
 import com.android.excuses404.data.api.model.UserRegisterResponse;
 import com.android.excuses404.utils.ErrorDialog;
@@ -84,10 +82,12 @@ public class RegisterFragment extends Fragment {
                                 + registerResponse.getDescription());
 
                         Toast.makeText(getActivity(),
-                                "Registro exitoso! Generando código de verificación...",
-                                Toast.LENGTH_SHORT).show();
+                                "Registro exitoso! Revisa tu email para el código de verificación",
+                                Toast.LENGTH_LONG).show();
 
-                        generateOtpForRegistration(username);
+                        if (getActivity() instanceof AuthActivity) {
+                            ((AuthActivity) getActivity()).loadFragment(OtpFragment.newInstance(username));
+                        }
 
                     } else {
                         ErrorDialog.showRegistrationError(getActivity(),
@@ -115,45 +115,4 @@ public class RegisterFragment extends Fragment {
         return view;
     }
 
-    private void generateOtpForRegistration(String username) {
-        ResendOtpRequest otpRequest = new ResendOtpRequest(username, ResendOtpRequest.TYPE_REGISTRATION);
-        Call<ResendOtpResponse> call = userApiService.resendOtp(otpRequest);
-
-        call.enqueue(new Callback<ResendOtpResponse>() {
-            @Override
-            public void onResponse(Call<ResendOtpResponse> call, Response<ResendOtpResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    ResendOtpResponse otpResponse = response.body();
-                    Log.d("RegisterFragment", "OTP generado exitosamente: " + otpResponse.getCode() + " - "
-                            + otpResponse.getDescription());
-
-                    Toast.makeText(getActivity(),
-                            "Código de verificación enviado! Revisa tu email",
-                            Toast.LENGTH_LONG).show();
-
-                    if (getActivity() instanceof AuthActivity) {
-                        ((AuthActivity) getActivity()).loadFragment(OtpFragment.newInstance(username));
-                    }
-
-                } else {
-                    Log.e("RegisterFragment", "Error al generar OTP: " + response.code());
-                    ErrorDialog.showGenericError(getActivity(),
-                            "Registro completado, pero no se pudo enviar el código de verificación. " +
-                                    "Intenta solicitar un nuevo código desde la pantalla de verificación.");
-
-                    if (getActivity() instanceof AuthActivity) {
-                        ((AuthActivity) getActivity()).loadFragment(OtpFragment.newInstance(username));
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResendOtpResponse> call, Throwable t) {
-                Log.e("RegisterFragment", "Error de conexión al generar OTP", t);
-                ErrorDialog.showConnectionError(getActivity(), () -> {
-                    generateOtpForRegistration(username);
-                });
-            }
-        });
-    }
 }
