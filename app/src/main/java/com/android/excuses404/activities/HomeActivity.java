@@ -102,6 +102,9 @@ public class HomeActivity extends AppCompatActivity
                 if (itemId == R.id.menu_my_profile) {
                     handleMyProfile();
                     return true;
+                } else if (itemId == R.id.menu_history) {
+                    handleHistory();
+                    return true;
                 } else if (itemId == R.id.menu_logout) {
                     handleLogout();
                     return true;
@@ -119,6 +122,11 @@ public class HomeActivity extends AppCompatActivity
         boolean isLoggedIn = tokenRepository.isLoggedIn();
 
         Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
+        startActivity(intent);
+    }
+
+    private void handleHistory() {
+        Intent intent = new Intent(HomeActivity.this, HistoryActivity.class);
         startActivity(intent);
     }
 
