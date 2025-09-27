@@ -3,6 +3,8 @@ package com.android.excuses404.di;
 import com.android.excuses404.data.api.ClassesApiService;
 import com.android.excuses404.data.api.DisciplinesApiService;
 import com.android.excuses404.data.api.HistoryApiService;
+import com.android.excuses404.data.api.ReservationsApiService;
+import com.android.excuses404.data.api.ReserveApiService;
 import com.android.excuses404.data.api.UserApiService;
 import com.android.excuses404.data.repository.LocationsRepository;
 import com.android.excuses404.services.UserService;
@@ -61,6 +63,18 @@ public class NetworkModule {
     @Singleton
     HistoryApiService provideHistoryApiService(Retrofit retrofit) {
         return retrofit.create(HistoryApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    ReservationsApiService provideReservationsApiService(Retrofit retrofit) {
+        return retrofit.create(ReservationsApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    ReserveApiService provideReserveApiService(Retrofit retrofit) {
+        return retrofit.create(ReserveApiService.class);
     }
 
     @Provides

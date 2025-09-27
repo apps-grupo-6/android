@@ -104,6 +104,19 @@
             android:textColor="@android:color/black"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="12dp" />
+
+
+        <!-- Botón de volver (oculto inicialmente) -->
+        <Button
+            android:id="@+id/btn_back_disciplines"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="← Volver a disciplinas"
+            android:layout_gravity="start"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"
+            style="@style/Widget.MaterialComponents.Button.TextButton" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_clases"
         android:layout_width="match_parent"
