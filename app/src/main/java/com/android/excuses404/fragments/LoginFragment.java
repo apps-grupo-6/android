@@ -70,7 +70,7 @@ public class LoginFragment extends Fragment {
 
             UserLoginRequest userRequest = new UserLoginRequest(user, pass);
             Call<UserLoginResponse> call = userApiService.login(userRequest);
-            call.enqueue(new Callback<>() {
+            call.enqueue(new Callback<UserLoginResponse>() {
                 @Override
                 public void onResponse(Call<UserLoginResponse> call, Response<UserLoginResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {

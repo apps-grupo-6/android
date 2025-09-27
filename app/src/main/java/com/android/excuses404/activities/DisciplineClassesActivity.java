@@ -2,6 +2,7 @@ package com.android.excuses404.activities;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -21,6 +22,7 @@ import com.android.excuses404.data.api.model.DisciplineData;
 import com.android.excuses404.data.api.model.DisciplinesResponse;
 import com.android.excuses404.data.repository.LocationsRepository;
 import com.android.excuses404.data.repository.LocationsServiceCallBack;
+import com.android.excuses404.core.repository.TokenRepository;
 import com.android.excuses404.models.Class;
 
 import java.text.ParseException;
@@ -67,6 +69,9 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
     @Inject
     public LocationsRepository locationsRepository;
 
+    @Inject
+    TokenRepository tokenRepository;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,7 +82,8 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
         setupFilters();
 
         String discipline = getIntent().getStringExtra(EXTRA_DISCIPLINE_NAME);
-        if (discipline == null) discipline = "Sin disciplina";
+        if (discipline == null)
+            discipline = "Sin disciplina";
         tvTitle.setText(discipline);
 
         fetchData();
@@ -89,7 +95,8 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
         tvEmpty = findViewById(R.id.tv_empty);
         progressBar = findViewById(R.id.pb_loading_discipline);
         btnBack = findViewById(R.id.btn_back_discipline);
-        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
+        if (btnBack != null)
+            btnBack.setOnClickListener(v -> finish());
 
         spSede = findViewById(R.id.sp_sede);
         tvDatePickerFrom = findViewById(R.id.tv_date_picker);
@@ -112,7 +119,10 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
                 selectedSede = "Todas".equals(sel) ? null : sel;
                 applyFilters();
             }
-            @Override public void onNothingSelected(AdapterView<?> parent) {}
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
         });
 
         // Date picker
@@ -129,8 +139,7 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
                     },
                     cal.get(Calendar.YEAR),
                     cal.get(Calendar.MONTH),
-                    cal.get(Calendar.DAY_OF_MONTH)
-            );
+                    cal.get(Calendar.DAY_OF_MONTH));
             dlg.show();
         });
 
@@ -147,8 +156,7 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
                     },
                     cal.get(Calendar.YEAR),
                     cal.get(Calendar.MONTH),
-                    cal.get(Calendar.DAY_OF_MONTH)
-            );
+                    cal.get(Calendar.DAY_OF_MONTH));
             dlg.show();
         });
 
@@ -167,7 +175,8 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
     private void fetchData() {
         progressBar.setVisibility(View.VISIBLE);
 
-        locationsRepository.getAllLocations(new LocationsServiceCallBack() {
+        String token = getJwtToken();
+        locationsRepository.getAllLocations(token, new LocationsServiceCallBack() {
             @Override
             public void onSuccess(DisciplinesResponse response) {
                 progressBar.setVisibility(View.GONE);
@@ -180,7 +189,8 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
             @Override
             public void onError(Throwable error) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(DisciplineClassesActivity.this, "Error cargando datos: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(DisciplineClassesActivity.this, "Error cargando datos: " + error.getMessage(),
+                        Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -191,7 +201,8 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
         Set<String> uniques = new LinkedHashSet<>();
         for (Class c : classesForDiscipline) {
             String sede = c.getGymName();
-            if (sede == null || sede.trim().isEmpty()) sede = "Sin sede";
+            if (sede == null || sede.trim().isEmpty())
+                sede = "Sin sede";
             uniques.add(sede);
         }
         sedeOptions.addAll(uniques);
@@ -203,7 +214,8 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
 
     private ArrayList<Class> mapResponseToClasses(DisciplinesResponse response) {
         ArrayList<Class> list = new ArrayList<>();
-        if (response == null || response.getData() == null) return list;
+        if (response == null || response.getData() == null)
+            return list;
 
         String selectedDiscipline = getIntent().getStringExtra(EXTRA_DISCIPLINE_NAME);
 
@@ -230,7 +242,9 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
                 if (sede == null || sede.trim().isEmpty())
                     sede = "Sin sede";
 
-                if (!selectedSede.equals(sede)) continue; }
+                if (!selectedSede.equals(sede))
+                    continue;
+            }
 
             if (selectedDateFrom != null || selectedDateTo != null) {
                 String sched = c.getScheduledAt();
@@ -246,20 +260,17 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
                         if (schedDateOnly.compareTo(from) < 0 || schedDateOnly.compareTo(to) > 0) {
                             continue;
                         }
-                    }
-                    else if (selectedDateFrom != null) {
+                    } else if (selectedDateFrom != null) {
                         Date from = onlyDate.parse(selectedDateFrom);
                         if (schedDateOnly.compareTo(from) < 0) {
                             continue;
                         }
-                    }
-                    else if (selectedDateTo != null) {
+                    } else if (selectedDateTo != null) {
                         Date to = onlyDate.parse(selectedDateTo);
                         if (schedDateOnly.compareTo(to) > 0) {
                             continue;
                         }
                     }
-
 
                 } catch (ParseException e) {
                     continue;
@@ -291,5 +302,15 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
                         "\nFecha: " + classItem.getScheduledAt() +
                         "\nParticipantes máx: " + classItem.getMaxParticipants(),
                 Toast.LENGTH_LONG).show();
+    }
+
+    private String getJwtToken() {
+        if (tokenRepository.hasToken()) {
+            String token = tokenRepository.getToken();
+            Log.d("DisciplineClassesActivity", "Token obtenido del TokenRepository: " + (token != null ? "SÍ" : "NO"));
+            return token;
+        }
+        Log.d("DisciplineClassesActivity", "No hay token en TokenRepository, usando token ficticio");
+        return "token_ficticio_para_desarrollo_123456789";
     }
 }

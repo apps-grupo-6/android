@@ -27,7 +27,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "⭐ onCreate: La Activity está siendo creada");
-
         biometricAuthenticator = new BiometricAuthenticator(this, new BiometricAuthenticator.AuthenticationCallback() {
             @Override
             public void onAuthenticationSuccess() {
@@ -48,11 +47,15 @@ public class MainActivity extends AppCompatActivity {
     private void checkUserLoginStatus() {
         Log.d(TAG, "⭐ onCreate: validando que si el usuario esta logeado");
 
-        boolean isLoggedIn = tokenRepository.isLoggedIn() && tokenRepository.hasToken();
+        boolean isLoggedIn = tokenRepository.isLoggedIn();
+        boolean hasToken = tokenRepository.hasToken();
+        String token = tokenRepository.getToken();
 
-        if (isLoggedIn) {
+        if (isLoggedIn && hasToken) {
+            Log.d(TAG, "Usuario logueado - yendo al Home");
             startActivity(new Intent(this, HomeActivity.class));
         } else {
+            Log.d(TAG, "Usuario NO logueado - yendo al Login");
             startActivity(new Intent(this, AuthActivity.class));
         }
         finish();
@@ -93,28 +96,6 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         Log.d(TAG, "⭐ onDestroy: La Activity está siendo destruida");
     }
-    /*
-     * private void loadPokemons() {
-     * pokemonService.getAllPokemons(new PokemonServiceCallBack() {
-     * 
-     * @Override
-     * public void onSuccess(List<Pokemon> pokemons) {
-     * pokemonDisplayList.clear();
-     * pokemonDisplayList.addAll(pokemons.stream()
-     * .map(pokemon -> pokemon.getName() + " - " + pokemon.getType())
-     * .collect(Collectors.toList()));
-     * runOnUiThread(() -> adapter.notifyDataSetChanged());
-     * }
-     * 
-     * @Override
-     * public void onError(Throwable error) {
-     * runOnUiThread(() -> Toast.makeText(MainActivity.this,
-     * "Error al cargar los Pokemon: " + error.getMessage(),
-     * Toast.LENGTH_LONG).show());
-     * }
-     * });
-     * }
-     */
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -127,22 +108,4 @@ public class MainActivity extends AppCompatActivity {
         super.onRestoreInstanceState(savedInstanceState);
         Log.d(TAG, "⭐ onRestoreInstanceState: Restaurando el estado guardado de la Activity");
     }
-    /*
-     * @Override
-     * public boolean onCreateOptionsMenu(Menu menu) {
-     * getMenuInflater().inflate(R.menu.main_menu, menu);
-     * return true;
-     * }
-     */
-    /*
-     * @Override
-     * public boolean onOptionsItemSelected(MenuItem item) {
-     * if (item.getItemId() == R.id.action_navigation) {
-     * Intent intent = new Intent(this, PokemonMainActivity.class);
-     * startActivity(intent);
-     * return true;
-     * }
-     * return super.onOptionsItemSelected(item);
-     * }
-     */
 }

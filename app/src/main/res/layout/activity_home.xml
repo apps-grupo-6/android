@@ -8,11 +8,13 @@
     <LinearLayout
         android:id="@+id/navbar"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="64dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp"
         android:background="?attr/colorPrimary"
         android:elevation="4dp">
 
@@ -47,25 +49,61 @@
 
     </LinearLayout>
 
+    <!-- Banner del gimnasio -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="120dp">
+        
+        <ImageView
+            android:id="@+id/iv_gym_banner"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/gym_banner"
+            android:contentDescription="Banner del gimnasio" />
+        
+        <!-- Texto del banner -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="16dp"
+            android:orientation="vertical">
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="¡Bienvenido de vuelta!"
+                android:textColor="@android:color/white"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:shadowColor="#FF000000"
+                android:shadowDx="3"
+                android:shadowDy="3"
+                android:shadowRadius="6" />
+                
+        </LinearLayout>
+            
+    </FrameLayout>
+
     <!-- Contenido principal -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:gravity="center"
         android:orientation="vertical"
         android:padding="16dp">
-
         <TextView
             android:id="@+id/tv_title"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:gravity="center"
-            android:text="Disciplinas"
-            android:textSize="22sp"
+            android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="@android:color/black" />
+            android:textColor="@android:color/black"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="12dp" />
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_clases"
         android:layout_width="match_parent"
