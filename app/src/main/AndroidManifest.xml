@@ -55,6 +55,12 @@
             android:theme="@style/Theme.Excuses404"
             android:parentActivityName=".activities.HomeActivity" />
 
+        <activity
+            android:name=".activities.ReservationsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Excuses404"
+            android:parentActivityName=".activities.HomeActivity" />
+
     </application>
 
 </manifest>

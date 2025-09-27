@@ -21,7 +21,6 @@ import com.android.excuses404.R;
 import com.android.excuses404.core.repository.TokenRepository;
 import com.android.excuses404.adapters.ClassesAdapter;
 import com.android.excuses404.adapters.DisciplineAdapter;
-import com.android.excuses404.data.api.model.ClassesResponse;
 import com.android.excuses404.data.api.model.DisciplineData;
 import com.android.excuses404.data.api.model.DisciplinesResponse;
 import com.android.excuses404.data.repository.LocationsRepository;
@@ -54,8 +53,8 @@ public class HomeActivity extends AppCompatActivity
     private ProgressBar progressBar;
     private TextView tvErrorMessage;
     private TextView tvTitle;
-    private View btnBack;
-
+    private Button btnBack;
+    private Button btnBackDisciplines;
     private java.util.List<Class> allClasses = new java.util.ArrayList<>();
     private boolean showingDisciplines = true;
     private String currentDiscipline = null;
@@ -102,6 +101,9 @@ public class HomeActivity extends AppCompatActivity
                 if (itemId == R.id.menu_my_profile) {
                     handleMyProfile();
                     return true;
+                } else if (itemId == R.id.menu_reservations) {
+                    handleReservations();
+                    return true;
                 } else if (itemId == R.id.menu_history) {
                     handleHistory();
                     return true;
@@ -122,6 +124,11 @@ public class HomeActivity extends AppCompatActivity
         boolean isLoggedIn = tokenRepository.isLoggedIn();
 
         Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
+        startActivity(intent);
+    }
+
+    private void handleReservations() {
+        Intent intent = new Intent(HomeActivity.this, ReservationsActivity.class);
         startActivity(intent);
     }
 
@@ -150,12 +157,19 @@ public class HomeActivity extends AppCompatActivity
             tvErrorMessage = findViewById(R.id.tv_error);
             tvTitle = findViewById(R.id.tv_title);
             btnBack = findViewById(R.id.btn_back);
+            btnBackDisciplines = findViewById(R.id.btn_back_disciplines);
+
             if (btnBack != null) {
                 btnBack.setOnClickListener(v -> returnToDisciplines());
             }
+
+            if (btnBackDisciplines != null) {
+                btnBackDisciplines.setOnClickListener(v -> returnToDisciplines());
+            }
+
             // Verificar que todos los elementos fueron encontrados
             if (recyclerView == null || progressBar == null || tvErrorMessage == null || tvTitle == null
-                    || btnBack == null) {
+                    || btnBack == null || btnBackDisciplines == null) {
                 Log.e(TAG, "Error: No se pudieron encontrar todos los elementos del layout");
                 Toast.makeText(this, "Error de interfaz: elementos faltantes", Toast.LENGTH_LONG).show();
                 finish();
@@ -180,10 +194,12 @@ public class HomeActivity extends AppCompatActivity
     private void showDisciplines() {
         showingDisciplines = true;
         currentDiscipline = null;
-        if (btnBack != null)
-            btnBack.setVisibility(View.GONE);
+        if (btnBackDisciplines != null)
+            btnBackDisciplines.setVisibility(View.GONE);
         if (tvTitle != null)
             tvTitle.setText("Nuestras Disciplinas");
+
+        // Mostrar disciplinas en RecyclerView
         java.util.Set<String> set = new java.util.LinkedHashSet<>();
         for (Class c : allClasses) {
             String d = c.getDisciplineName();
@@ -195,8 +211,50 @@ public class HomeActivity extends AppCompatActivity
         recyclerView.setAdapter(disciplineAdapter);
     }
 
+    private void showDisciplinesView() {
+        showingDisciplines = true;
+        currentDiscipline = null;
+        if (btnBack != null)
+            btnBack.setVisibility(View.GONE);
+        if (tvTitle != null)
+            tvTitle.setText("Nuestras Disciplinas");
+
+        // Mostrar disciplinas en RecyclerView
+        java.util.Set<String> set = new java.util.LinkedHashSet<>();
+        for (Class c : allClasses) {
+            String d = c.getDisciplineName();
+            if (d == null || d.trim().isEmpty())
+                d = "Sin disciplina";
+            set.add(d);
+        }
+        disciplineAdapter.setDisciplines(new java.util.ArrayList<>(set));
+        recyclerView.setAdapter(disciplineAdapter);
+    }
+
+    private void showClassesForDiscipline(String disciplineName) {
+        showingDisciplines = false;
+        currentDiscipline = disciplineName;
+        if (btnBack != null)
+            btnBack.setVisibility(View.VISIBLE);
+        if (tvTitle != null)
+            tvTitle.setText("Clases de " + disciplineName);
+
+        // Filtrar clases para la disciplina seleccionada
+        java.util.ArrayList<Class> filtered = new java.util.ArrayList<>();
+        for (Class c : allClasses) {
+            String d = c.getDisciplineName();
+            if (d == null || d.trim().isEmpty())
+                d = "Sin disciplina";
+            if (d.equals(disciplineName))
+                filtered.add(c);
+        }
+
+        classesAdapter.setClasses(filtered);
+        recyclerView.setAdapter(classesAdapter);
+    }
+
     private void returnToDisciplines() {
-        showDisciplines();
+        showDisciplinesView();
     }
 
     private void loadClassesCatalog() {
@@ -332,17 +390,7 @@ public class HomeActivity extends AppCompatActivity
 
     @Override
     public void onDisciplineClick(String disciplineName) {
-        // Filtrar clases para la disciplina
-        java.util.ArrayList<Class> filtered = new java.util.ArrayList<>();
-        for (Class c : allClasses) {
-            String d = c.getDisciplineName();
-            if (d == null || d.trim().isEmpty())
-                d = "Sin disciplina";
-            if (d.equals(disciplineName))
-                filtered.add(c);
-        }
-        Intent intent = new Intent(this, DisciplineClassesActivity.class);
-        intent.putExtra(DisciplineClassesActivity.EXTRA_DISCIPLINE_NAME, disciplineName);
-        startActivity(intent);
+        // Mostrar clases para la disciplina seleccionada
+        showClassesForDiscipline(disciplineName);
     }
 }

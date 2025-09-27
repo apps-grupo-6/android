@@ -30,11 +30,12 @@ public class Class implements Parcelable {
     private int maxParticipants;
 
     // Constructor vacío para Gson
-    public Class() {}
+    public Class() {
+    }
 
     // Constructor con parámetros principales
     public Class(String classId, String professorFirstName,
-                 String gymName, String gymCity, String disciplineName, String scheduledAt, int maxParticipants) {
+            String gymName, String gymCity, String disciplineName, String scheduledAt, int maxParticipants) {
         this.classId = classId;
         this.professorFirstName = professorFirstName;
         this.gymName = gymName;
@@ -45,21 +46,58 @@ public class Class implements Parcelable {
     }
 
     // Getters
-    public String getProfessorFirstName() { return professorFirstName; }
-    public String getGymName() { return gymName; }
-    public String getDisciplineName() { return disciplineName; }
-    public String getScheduledAt() { return scheduledAt; }
-    public int getMaxParticipants() { return maxParticipants; }
+    public String getProfessorFirstName() {
+        return professorFirstName;
+    }
+
+    public String getGymName() {
+        return gymName;
+    }
+
+    public String getDisciplineName() {
+        return disciplineName;
+    }
+
+    public String getScheduledAt() {
+        return scheduledAt;
+    }
+
+    public int getMaxParticipants() {
+        return maxParticipants;
+    }
 
     // Setters
-    public void setClassId(String classId) { this.classId = classId; }
-    public void setProfessorFirstName(String professorFirstName) { this.professorFirstName = professorFirstName; }
-    public void setGymName(String gymName) { this.gymName = gymName; }
-    public void setGymCity(String gymCity) { this.gymCity = gymCity; }
-    public void setGymAddress(String gymAddress) { this.gymAddress = gymAddress; }
-    public void setDisciplineName(String disciplineName) { this.disciplineName = disciplineName; }
-    public void setScheduledAt(String scheduledAt) { this.scheduledAt = scheduledAt; }
-    public void setMaxParticipants(int maxParticipants) { this.maxParticipants = maxParticipants; }
+    public void setClassId(String classId) {
+        this.classId = classId;
+    }
+
+    public void setProfessorFirstName(String professorFirstName) {
+        this.professorFirstName = professorFirstName;
+    }
+
+    public void setGymName(String gymName) {
+        this.gymName = gymName;
+    }
+
+    public void setGymCity(String gymCity) {
+        this.gymCity = gymCity;
+    }
+
+    public void setGymAddress(String gymAddress) {
+        this.gymAddress = gymAddress;
+    }
+
+    public void setDisciplineName(String disciplineName) {
+        this.disciplineName = disciplineName;
+    }
+
+    public void setScheduledAt(String scheduledAt) {
+        this.scheduledAt = scheduledAt;
+    }
+
+    public void setMaxParticipants(int maxParticipants) {
+        this.maxParticipants = maxParticipants;
+    }
 
     // Parcelable implementation
     protected Class(Parcel in) {
