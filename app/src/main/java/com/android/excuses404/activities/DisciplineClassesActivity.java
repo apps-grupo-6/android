@@ -237,23 +237,26 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
 
                 try {
                     Date schedDate = inputDateTime.parse(sched);
+                    Date schedDateOnly = onlyDate.parse(onlyDate.format(schedDate));
 
-                    if (selectedDateFrom != null && selectedDateTo != null){
+                    if (selectedDateFrom != null && selectedDateTo != null) {
                         Date from = onlyDate.parse(selectedDateFrom);
                         Date to = onlyDate.parse(selectedDateTo);
-                        if (schedDate.before(from) || schedDate.after(to)){
-                            continue; // entre las fechas
+
+                        if (schedDateOnly.compareTo(from) < 0 || schedDateOnly.compareTo(to) > 0) {
+                            continue;
                         }
                     }
                     else if (selectedDateFrom != null) {
                         Date from = onlyDate.parse(selectedDateFrom);
-                        if (schedDate.before(from)) {
-                            continue; // antes de la fecha "desde"
+                        if (schedDateOnly.compareTo(from) < 0) {
+                            continue;
                         }
-                    } else {
+                    }
+                    else if (selectedDateTo != null) {
                         Date to = onlyDate.parse(selectedDateTo);
-                        if (schedDate.after(to)) {
-                            continue; // después de la fecha "hasta"
+                        if (schedDateOnly.compareTo(to) > 0) {
+                            continue;
                         }
                     }
 
