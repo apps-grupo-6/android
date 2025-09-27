@@ -1,5 +1,6 @@
 package com.android.excuses404.di;
 
+import com.android.excuses404.data.api.ClassesApiService;
 import com.android.excuses404.data.api.UserApiService;
 
 import javax.inject.Singleton;
@@ -36,5 +37,11 @@ public class NetworkModule {
     @Singleton
     UserApiService provideUserApiService(Retrofit retrofit) {
         return retrofit.create(UserApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    ClassesApiService provideClassesApiService(Retrofit retrofit) {
+        return retrofit.create(ClassesApiService.class);
     }
 }

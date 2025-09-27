@@ -42,6 +42,7 @@ public class LoginFragment extends Fragment {
 
     private EditText etUser, etPassword;
     private Button btnLogin;
+    private Button btnDirectAccess; // Nuevo botón de acceso directo
     private TextView tvGoRegister;
 
     @Inject
@@ -57,7 +58,26 @@ public class LoginFragment extends Fragment {
         etUser = view.findViewById(R.id.etUser);
         etPassword = view.findViewById(R.id.etPassword);
         btnLogin = view.findViewById(R.id.btnLogin);
+        btnDirectAccess = view.findViewById(R.id.btnDirectAccess); // Inicializar el botón
         tvGoRegister = view.findViewById(R.id.tvGoRegister);
+
+        // Configurar el botón de acceso directo
+        btnDirectAccess.setOnClickListener(v -> {
+            // Guardar un flag de sesión ficticia y un token JWT para desarrollo
+            SharedPreferences prefs = getActivity().getSharedPreferences(USER_DATA, MODE_PRIVATE);
+            prefs.edit()
+                .putBoolean(IS_USER_LOGGED_IN, true)
+                .putString("jwt_token", "token_ficticio_para_desarrollo_123456789")
+                .apply();
+
+            // Mostrar mensaje para el desarrollador
+            Toast.makeText(getActivity(), "Accediendo sin autenticación (modo desarrollo)", Toast.LENGTH_SHORT).show();
+
+            // Navegar directamente a HomeActivity
+            Intent intent = new Intent(getActivity(), HomeActivity.class);
+            startActivity(intent);
+            // No hacemos finish() para poder volver al login si es necesario durante el desarrollo
+        });
 
         btnLogin.setOnClickListener(v -> {
             String user = etUser.getText().toString().trim();
@@ -70,14 +90,20 @@ public class LoginFragment extends Fragment {
 
             UserLoginRequest userRequest = new UserLoginRequest(user, pass);
             Call<UserLoginResponse> call = userApiService.login(userRequest);
-            call.enqueue(new Callback<>() {
+            call.enqueue(new Callback<UserLoginResponse>() {
                 @Override
                 public void onResponse(Call<UserLoginResponse> call, Response<UserLoginResponse> response) {
+                    if (!response.isSuccessful() || response.body() == null) {
+                        Toast.makeText(getActivity(), "Error en la respuesta del servidor", Toast.LENGTH_LONG).show();
+                        Log.e("LoginFragment", "Error en login: " + response.code());
+                        return;
+                    }
+
                     UserLoginResponse loginResponse = response.body();
                     String code = loginResponse.getCode();
                     Log.d("LoginFragment", "Backend response: "+ code + " - "+ loginResponse.getDescription());
 
-                    if (response.isSuccessful() && code.equals("0200")) { // if everything is ok
+                    if (code.equals("0200")) { // if everything is ok
                         SharedPreferences prefs = getActivity().getSharedPreferences(USER_DATA, MODE_PRIVATE);
                         prefs.edit().putBoolean(IS_USER_LOGGED_IN, true).apply();
 
@@ -86,7 +112,7 @@ public class LoginFragment extends Fragment {
                         getActivity().finish(); // keep it. Without it, user can go back to the login panel
                     } else {
                         Toast.makeText(getActivity(), "Error en la respuesta del servidor", Toast.LENGTH_LONG).show();
-                        Log.e("LoginFragment", "Error en login: " + response.code());
+                        Log.e("LoginFragment", "Error en login con código: " + code);
                     }
                 }
 
