@@ -4,5 +4,6 @@
         <domain>127.0.0.1</domain>
         <domain>localhost</domain>
         <domain>10.0.2.2</domain> <!-- Para el emulador -->
+        <domain>192.168.0.15</domain> <!-- Servidor local en red WiFi -->
     </domain-config>
 </network-security-config>

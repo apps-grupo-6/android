@@ -1,0 +1,62 @@
+{
+  "success": true,
+  "message": "Clases obtenidas correctamente",
+  "classes": [
+    {
+      "class_id": "1",
+      "professor_first_name": "Ana",
+      "professor_last_name": "García",
+      "gym_name": "Gimnasio Central",
+      "gym_city": "Buenos Aires",
+      "gym_address": "Av. Corrientes 1234",
+      "class_discipline_name": "Yoga",
+      "class_scheduled_at": "2025-09-25 08:00:00",
+      "class_max_participants": 15
+    },
+    {
+      "class_id": "2",
+      "professor_first_name": "Carlos",
+      "professor_last_name": "Rodríguez",
+      "gym_name": "Urban Gym Palermo",
+      "gym_city": "Buenos Aires",
+      "gym_address": "Palermo 456",
+      "class_discipline_name": "Spinning",
+      "class_scheduled_at": "2025-09-25 18:30:00",
+      "class_max_participants": 18
+    },
+    {
+      "class_id": "3",
+      "professor_first_name": "María",
+      "professor_last_name": "López",
+      "gym_name": "FitZone Córdoba",
+      "gym_city": "Córdoba",
+      "gym_address": "San Martín 567",
+      "class_discipline_name": "CrossFit",
+      "class_scheduled_at": "2025-09-25 19:00:00",
+      "class_max_participants": 20
+    },
+    {
+      "class_id": "4",
+      "professor_first_name": "Juan",
+      "professor_last_name": "Pérez",
+      "gym_name": "PowerGym Rosario",
+      "gym_city": "Rosario",
+      "gym_address": "Mitre 890",
+      "class_discipline_name": "Pilates",
+      "class_scheduled_at": "2025-09-26 07:30:00",
+      "class_max_participants": 12
+    },
+    {
+      "class_id": "5",
+      "professor_first_name": "Laura",
+      "professor_last_name": "Fernández",
+      "gym_name": "Fitness Club Mendoza",
+      "gym_city": "Mendoza",
+      "gym_address": "San Juan 321",
+      "class_discipline_name": "Zumba",
+      "class_scheduled_at": "2025-09-26 20:00:00",
+      "class_max_participants": 25
+    }
+  ]
+}
+
