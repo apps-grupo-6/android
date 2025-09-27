@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -6,94 +7,84 @@
     android:padding="24dp"
     android:gravity="center_vertical">
 
-    <!-- Title Excuses 404 -->
+
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardLogo"
+        android:id="@+id/cardVerificationTitle"
         style="@style/AppCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="48dp"
-        app:layout_constraintBottom_toTopOf="@id/tilUser"
+        android:layout_marginBottom="24dp"
+        app:cardElevation="2dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed"
-        app:layout_constraintVertical_bias="0.3">
+        app:layout_constraintTop_toBottomOf="@id/cardLogo">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:padding="28dp"
-            android:text="Excuses 404"
+            android:padding="20dp"
+            android:text="Verificación de Email"
             android:textAppearance="?attr/textAppearanceHeadline6"
             android:textColor="?attr/colorOnSurface" />
 
     </com.google.android.material.card.MaterialCardView>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilUser"
-        style="@style/AppTextInputLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:hint="Usuario"
-        app:layout_constraintBottom_toTopOf="@id/tilPassword"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cardLogo"
-        app:startIconDrawable="@drawable/ic_person_24">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etUser"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text"
-            android:textColor="?attr/colorOnSurface" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Password -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilPassword"
-        style="@style/AppTextInputLayout"
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="32dp"
-        android:hint="Contraseña"
-        app:endIconMode="password_toggle"
-        app:layout_constraintBottom_toTopOf="@id/btnLogin"
+        android:gravity="center"
+        android:padding="16dp"
+        android:text="Hemos enviado un código de verificación a tu email. Por favor, ingrésalo a continuación:"
+        android:textAppearance="?attr/textAppearanceBody1"
+        android:textColor="?attr/colorOnSurface"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tilUser"
+        app:layout_constraintTop_toBottomOf="@id/cardVerificationTitle" />
+
+    <!-- OTP Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilOtpCode"
+        style="@style/AppTextInputLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:hint="Código de verificación"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvDescription"
         app:startIconDrawable="@drawable/ic_lock_24">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etPassword"
+            android:id="@+id/etOtpCode"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textPassword"
-            android:textColor="?attr/colorOnSurface" />
+            android:inputType="number"
+            android:maxLength="6"
+            android:textAlignment="center"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="18sp" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Login -->
+    <!-- Verify -->
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnLogin"
+        android:id="@+id/btnVerifyOtp"
         style="@style/AppButton"
         android:layout_width="0dp"
         android:layout_height="56dp"
         android:layout_marginBottom="24dp"
-        android:text="Iniciar Sesión"
-        app:layout_constraintBottom_toTopOf="@id/tvForgotPassword"
+        android:text="Verificar Código"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tilPassword" />
+        app:layout_constraintTop_toBottomOf="@id/tilOtpCode" />
 
-    <!-- Forgot Password -->
+    <!-- Resend Code -->
     <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/tvForgotPassword"
+        android:id="@+id/tvResendCode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
@@ -101,29 +92,28 @@
         android:clickable="true"
         android:focusable="true"
         android:padding="12dp"
-        android:text="¿Olvidaste tu contraseña?"
+        android:text="¿No recibiste el código? Reenviar"
         android:textAppearance="?attr/textAppearanceBody2"
         android:textColor="?attr/colorPrimary"
-        app:layout_constraintBottom_toTopOf="@id/tvGoRegister"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnLogin" />
+        app:layout_constraintTop_toBottomOf="@id/btnVerifyOtp" />
 
-    <!-- Register -->
+    <!-- Back -->
     <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/tvGoRegister"
+        android:id="@+id/tvGoBack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:clickable="true"
         android:focusable="true"
         android:padding="12dp"
-        android:text="¿No tienes cuenta? Regístrate"
+        android:text="Volver al registro"
         android:textAppearance="?attr/textAppearanceBody2"
         android:textColor="?attr/colorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvForgotPassword" />
+        app:layout_constraintTop_toBottomOf="@id/tvResendCode" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

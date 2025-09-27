@@ -1,7 +1,6 @@
 package com.android.excuses404.fragments;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,11 +17,12 @@ import androidx.fragment.app.Fragment;
 
 import com.android.excuses404.activities.AuthActivity;
 import com.android.excuses404.activities.HomeActivity;
+import com.android.excuses404.core.repository.TokenRepository;
 import com.android.excuses404.data.api.UserApiService;
 import com.android.excuses404.data.api.model.UserLoginRequest;
 import com.android.excuses404.data.api.model.UserLoginResponse;
 import com.android.excuses404.R;
-import com.google.gson.Gson;
+import com.android.excuses404.utils.ErrorDialog;
 
 import javax.inject.Inject;
 
@@ -30,10 +30,6 @@ import dagger.hilt.android.AndroidEntryPoint;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
-import static android.content.Context.MODE_PRIVATE;
-import static com.android.excuses404.utils.Constants.IS_USER_LOGGED_IN;
-import static com.android.excuses404.utils.Constants.USER_DATA;
 
 @AndroidEntryPoint
 public class LoginFragment extends Fragment {
@@ -48,11 +44,14 @@ public class LoginFragment extends Fragment {
     @Inject
     UserApiService userApiService;
 
+    @Inject
+    TokenRepository tokenRepository;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.login_fragment, container, false);
 
         etUser = view.findViewById(R.id.etUser);
@@ -60,6 +59,7 @@ public class LoginFragment extends Fragment {
         btnLogin = view.findViewById(R.id.btnLogin);
         btnDirectAccess = view.findViewById(R.id.btnDirectAccess); // Inicializar el botón
         tvGoRegister = view.findViewById(R.id.tvGoRegister);
+        tvForgotPassword = view.findViewById(R.id.tvForgotPassword);
 
         // Configurar el botón de acceso directo
         btnDirectAccess.setOnClickListener(v -> {
@@ -118,7 +118,9 @@ public class LoginFragment extends Fragment {
 
                 @Override
                 public void onFailure(Call<UserLoginResponse> call, Throwable t) {
-                    Toast.makeText(getActivity(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    ErrorDialog.showConnectionError(getActivity(), () -> {
+                        btnLogin.performClick();
+                    });
                     Log.e("LoginFragment", "onFailure login", t);
                 }
             });
@@ -127,6 +129,12 @@ public class LoginFragment extends Fragment {
         tvGoRegister.setOnClickListener(v -> {
             if (getActivity() instanceof AuthActivity) {
                 ((AuthActivity) getActivity()).loadFragment(new RegisterFragment());
+            }
+        });
+
+        tvForgotPassword.setOnClickListener(v -> {
+            if (getActivity() instanceof AuthActivity) {
+                ((AuthActivity) getActivity()).loadFragment(new ForgotPasswordFragment());
             }
         });
 

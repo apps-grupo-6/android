@@ -1,6 +1,5 @@
 package com.android.excuses404.activities;
 
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -54,6 +53,11 @@ public class HomeActivity extends AppCompatActivity implements ClassesAdapter.On
     private java.util.List<Class> allClasses = new java.util.ArrayList<>();
     private boolean showingDisciplines = true;
     private String currentDiscipline = null;
+
+    private static final String TAG = "HomeActivity";
+
+    @Inject
+    TokenRepository tokenRepository;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -145,7 +149,7 @@ public class HomeActivity extends AppCompatActivity implements ClassesAdapter.On
 
         for (DisciplineData d : resp.getData()) {
             Class c = new Class();
-            c.setDisciplineName(d.getDisciplineName());       // ← disciplina1 / disciplina2
+            c.setDisciplineName(d.getDisciplineName());     
             c.setScheduledAt(d.getClassScheduledAt());
             c.setMaxParticipants(d.getClassMaxParticipants());
             c.setGymName(d.getGymName());
