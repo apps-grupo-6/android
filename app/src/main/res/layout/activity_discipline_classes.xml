@@ -64,10 +64,19 @@
             android:id="@+id/tv_date_picker"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fecha"
+            android:text="Desde"
             android:padding="12dp"
             android:layout_marginTop="8dp"
             android:background="?attr/selectableItemBackground" />
+
+        <TextView
+            android:id="@+id/tv_date_picker2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="?attr/selectableItemBackground"
+            android:padding="12dp"
+            android:text="Hasta" />
 
         <Button
             android:id="@+id/btn_clear_filters"

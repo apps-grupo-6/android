@@ -17,23 +17,32 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.excuses404.R;
 import com.android.excuses404.adapters.ClassesAdapter;
 import com.android.excuses404.adapters.DisciplineAdapter;
-import com.android.excuses404.data.api.ApiClient;
-import com.android.excuses404.data.api.MockApiClient;
-import com.android.excuses404.data.api.ClassesApiService;
 import com.android.excuses404.data.api.model.ClassesResponse;
+import com.android.excuses404.data.api.model.DisciplineData;
+import com.android.excuses404.data.api.model.DisciplinesResponse;
+import com.android.excuses404.data.repository.LocationsRepository;
+import com.android.excuses404.data.repository.LocationsServiceCallBack;
 import com.android.excuses404.models.Class;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+@AndroidEntryPoint
 public class HomeActivity extends AppCompatActivity implements ClassesAdapter.OnClassClickListener, DisciplineAdapter.OnDisciplineClickListener {
 
     private static final String TAG = "HomeActivity";
     private static final String PREFS_NAME = "UserPrefs";
     private static final String KEY_JWT_TOKEN = "jwt_token";
 
-    private ClassesApiService classesApiService;
+    @Inject
+    public LocationsRepository locationsRepository;
     private RecyclerView recyclerView;
     private ClassesAdapter classesAdapter;
     private DisciplineAdapter disciplineAdapter;
@@ -50,11 +59,6 @@ public class HomeActivity extends AppCompatActivity implements ClassesAdapter.On
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
-        // Usar MockApiClient para testing sin servidor
-        classesApiService = MockApiClient.getApi();
-        // classesApiService = ApiClient.getApi(); // producción
-
         initViews();
         setupRecyclerView();
         loadClassesCatalog();
@@ -115,70 +119,40 @@ public class HomeActivity extends AppCompatActivity implements ClassesAdapter.On
     private void loadClassesCatalog() {
         showLoading();
 
-        String token = getJwtToken();
-        if (token == null || token.isEmpty()) {
-            showError("Token de autenticación no encontrado. Por favor, inicia sesión nuevamente.");
-            return;
-        }
-
-        String authHeader = "Bearer " + token;
-
-        try {
-            Call<ClassesResponse> call = classesApiService.getAllClasses(authHeader);
-            call.enqueue(new Callback<ClassesResponse>() {
-                @Override
-                public void onResponse(Call<ClassesResponse> call, Response<ClassesResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        ClassesResponse classesResponse = response.body();
-                        if (classesResponse.isSuccess()) {
-                            if (classesResponse.getClasses() != null && !classesResponse.getClasses().isEmpty()) {
-                                allClasses = classesResponse.getClasses();
-                                showDisciplines();
-                                recyclerView.setVisibility(View.VISIBLE);
-                                progressBar.setVisibility(View.GONE);
-                                Log.d(TAG, "Cargadas " + allClasses.size() + " clases");
-                            } else {
-                                showEmpty("No se encontraron clases disponibles");
-                            }
-                        } else {
-                            showRetryableError("Error del servidor: " + classesResponse.getMessage());
-                        }
-                    } else {
-                        String errorBody = "";
-                        try {
-                            if (response.errorBody() != null) {
-                                errorBody = response.errorBody().string();
-                            }
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error al leer errorBody", e);
-                        }
-                        String errorMsg = "Error en la respuesta del servidor. Código: " + response.code() + ". Cuerpo: " + errorBody;
-                        Log.e(TAG, errorMsg);
-                        showRetryableError(errorMsg);
-                    }
+        locationsRepository.getAllLocations(new LocationsServiceCallBack() {
+            @Override
+            public void onSuccess(DisciplinesResponse response) {
+                allClasses = mapResponseToClassList(response);
+                if (allClasses.isEmpty()) {
+                    showEmpty("No se encontraron disciplinas");
+                } else {
+                    showDisciplines();
+                    recyclerView.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
                 }
+            }
 
-                @Override
-                public void onFailure(Call<ClassesResponse> call, Throwable t) {
-                    String message = "";
-                    if (t.getMessage() != null && t.getMessage().contains("Unable to resolve host")) {
-                        message = "No se pudo encontrar el servidor 192.168.0.15.\n\nVerifica que el servidor esté en ejecución y que el dispositivo esté conectado a la misma red.";
-                    } else if (t.getMessage() != null && t.getMessage().contains("timeout")) {
-                        message = "El servidor no respondió a tiempo.\n\nVerifica que el servidor no esté sobrecargado.";
-                    } else if (t.getMessage() != null && t.getMessage().contains("Connection refused")) {
-                        message = "Conexión rechazada por el servidor.\n\nVerifica que el servidor esté en ejecución en el puerto 5000.";
-                    } else {
-                        message = "Error de conexión: " + t.getMessage();
-                    }
+            @Override
+            public void onError(Throwable error) {
+                showRetryableError("Error al obtener disciplinas: " + error.getMessage());
+            }
+        });
+    }
 
-                    showRetryableError(message);
-                    Log.e(TAG, "Network error", t);
-                }
-            });
-        } catch (Exception e) {
-            showRetryableError("Error al preparar la petición: " + e.getMessage());
-            Log.e(TAG, "Error al preparar la petición", e);
+    private List<Class> mapResponseToClassList(DisciplinesResponse resp) {
+        List<Class> list = new ArrayList<>();
+        if (resp == null || resp.getData() == null) return list;
+
+        for (DisciplineData d : resp.getData()) {
+            Class c = new Class();
+            c.setDisciplineName(d.getDisciplineName());       // ← disciplina1 / disciplina2
+            c.setScheduledAt(d.getClassScheduledAt());
+            c.setMaxParticipants(d.getClassMaxParticipants());
+            c.setGymName(d.getGymName());
+            c.setProfessorFirstName(d.getProfessorName());    // backend ya concatena
+            list.add(c);
         }
+        return list;
     }
 
     // Método para mostrar error que permite reintentar al tocar
@@ -254,8 +228,8 @@ public class HomeActivity extends AppCompatActivity implements ClassesAdapter.On
         if (classItem == null) return;
         Toast.makeText(this,
                 "Clase: " + classItem.getDisciplineName() +
-                        "\nProfesor: " + classItem.getFullProfessorName() +
-                        "\nGimnasio: " + classItem.getFullGymInfo() +
+                        "\nProfesor: " + classItem.getProfessorFirstName() +
+                        "\nGimnasio: " + classItem.getGymName() +
                         "\nFecha: " + classItem.getScheduledAt() +
                         "\nParticipantes máx: " + classItem.getMaxParticipants(),
                 Toast.LENGTH_LONG).show();
@@ -272,7 +246,6 @@ public class HomeActivity extends AppCompatActivity implements ClassesAdapter.On
         }
         Intent intent = new Intent(this, DisciplineClassesActivity.class);
         intent.putExtra(DisciplineClassesActivity.EXTRA_DISCIPLINE_NAME, disciplineName);
-        intent.putParcelableArrayListExtra(DisciplineClassesActivity.EXTRA_CLASSES_LIST, filtered);
         startActivity(intent);
     }
 }

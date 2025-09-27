@@ -1,3 +1,4 @@
+/*
 package com.android.excuses404.data.api;
 
 import com.android.excuses404.data.api.model.ClassesResponse;
@@ -10,10 +11,12 @@ import okhttp3.Request;
 import java.util.ArrayList;
 import java.util.List;
 
+*/
 /**
  * Mock ApiClient local - Simula la respuesta del servidor sin red
  * Ideal para testing sin necesidad de servidor externo
- */
+ *//*
+
 public class MockApiClient {
 
     public static ClassesApiService getApi() {
@@ -140,3 +143,4 @@ public class MockApiClient {
         @Override public okio.Timeout timeout() { return okio.Timeout.NONE; }
     }
 }
+*/

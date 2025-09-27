@@ -17,22 +17,30 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.excuses404.R;
 import com.android.excuses404.adapters.ClassesAdapter;
+import com.android.excuses404.data.api.model.DisciplineData;
+import com.android.excuses404.data.api.model.DisciplinesResponse;
+import com.android.excuses404.data.repository.LocationsRepository;
+import com.android.excuses404.data.repository.LocationsServiceCallBack;
 import com.android.excuses404.models.Class;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class DisciplineClassesActivity extends AppCompatActivity implements ClassesAdapter.OnClassClickListener {
 
-    public static final String EXTRA_DISCIPLINE_NAME = "extra_discipline_name";
-    public static final String EXTRA_CLASSES_LIST = "extra_classes_list"; // ArrayList<Class>
-
+    public static final String EXTRA_DISCIPLINE_NAME = "";
     private TextView tvTitle;
     private RecyclerView rvClasses;
     private TextView tvEmpty;
@@ -41,19 +49,23 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
 
     // Filtros UI
     private Spinner spSede;
-    private TextView tvDatePicker;
+    private TextView tvDatePickerFrom;
+    private TextView tvDatePickerTo;
     private View btnClearFilters;
 
     private ClassesAdapter classesAdapter;
-    private ArrayList<Class> classesForDiscipline; // original (de Intent)
+    private ArrayList<Class> classesForDiscipline = new ArrayList<>(); // cargadas de API
     private ArrayList<Class> filteredClasses = new ArrayList<>();
 
     // Estado de filtros
     private String selectedSede = null; // null o "Todas"
-    private String selectedDate = null; // formato yyyy-MM-dd
+    private String selectedDateFrom = null; // formato yyyy-MM-dd
+    private String selectedDateTo = null; // formato yyyy-MM-dd
 
     private final SimpleDateFormat inputDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
     private final SimpleDateFormat onlyDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+    @Inject
+    public LocationsRepository locationsRepository;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -61,10 +73,14 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
         setContentView(R.layout.activity_discipline_classes);
 
         initViews();
-        loadFromIntent();
         setupRecycler();
         setupFilters();
-        applyFilters();
+
+        String discipline = getIntent().getStringExtra(EXTRA_DISCIPLINE_NAME);
+        if (discipline == null) discipline = "Sin disciplina";
+        tvTitle.setText(discipline);
+
+        fetchData();
     }
 
     private void initViews() {
@@ -76,16 +92,9 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
         if (btnBack != null) btnBack.setOnClickListener(v -> finish());
 
         spSede = findViewById(R.id.sp_sede);
-        tvDatePicker = findViewById(R.id.tv_date_picker);
+        tvDatePickerFrom = findViewById(R.id.tv_date_picker);
+        tvDatePickerTo = findViewById(R.id.tv_date_picker2);
         btnClearFilters = findViewById(R.id.btn_clear_filters);
-    }
-
-    private void loadFromIntent() {
-        String discipline = getIntent().getStringExtra(EXTRA_DISCIPLINE_NAME);
-        if (discipline == null) discipline = "Sin disciplina";
-        tvTitle.setText(discipline);
-        classesForDiscipline = getIntent().getParcelableArrayListExtra(EXTRA_CLASSES_LIST);
-        if (classesForDiscipline == null) classesForDiscipline = new ArrayList<>();
     }
 
     private void setupRecycler() {
@@ -96,20 +105,6 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
     }
 
     private void setupFilters() {
-        // Opciones de sede (usar gymName + " - " + gymCity)
-        List<String> sedeOptions = new ArrayList<>();
-        sedeOptions.add("Todas");
-        Set<String> uniques = new LinkedHashSet<>();
-        for (Class c : classesForDiscipline) {
-            String sede = c.getFullGymInfo();
-            if (sede == null || sede.trim().isEmpty()) sede = "Sin sede";
-            uniques.add(sede);
-        }
-        sedeOptions.addAll(uniques);
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sedeOptions);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spSede.setAdapter(adapter);
         spSede.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -121,15 +116,33 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
         });
 
         // Date picker
-        tvDatePicker.setOnClickListener(v -> {
+        tvDatePickerFrom.setOnClickListener(v -> {
             final Calendar cal = Calendar.getInstance();
             DatePickerDialog dlg = new DatePickerDialog(
                     this,
                     (view, year, month, dayOfMonth) -> {
                         Calendar c = Calendar.getInstance();
                         c.set(year, month, dayOfMonth, 0, 0, 0);
-                        selectedDate = onlyDate.format(c.getTime());
-                        tvDatePicker.setText(selectedDate);
+                        selectedDateFrom = onlyDate.format(c.getTime());
+                        tvDatePickerFrom.setText(selectedDateFrom);
+                        applyFilters();
+                    },
+                    cal.get(Calendar.YEAR),
+                    cal.get(Calendar.MONTH),
+                    cal.get(Calendar.DAY_OF_MONTH)
+            );
+            dlg.show();
+        });
+
+        tvDatePickerTo.setOnClickListener(v -> {
+            final Calendar cal = Calendar.getInstance();
+            DatePickerDialog dlg = new DatePickerDialog(
+                    this,
+                    (view, year, month, dayOfMonth) -> {
+                        Calendar c = Calendar.getInstance();
+                        c.set(year, month, dayOfMonth, 0, 0, 0);
+                        selectedDateTo = onlyDate.format(c.getTime());
+                        tvDatePickerTo.setText(selectedDateTo);
                         applyFilters();
                     },
                     cal.get(Calendar.YEAR),
@@ -142,31 +155,111 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
         // Limpiar filtros
         btnClearFilters.setOnClickListener(v -> {
             selectedSede = null;
-            selectedDate = null;
-            tvDatePicker.setText("Fecha");
+            selectedDateFrom = null;
+            selectedDateTo = null;
+            tvDatePickerFrom.setText("Desde");
+            tvDatePickerTo.setText("Hasta");
             spSede.setSelection(0);
             applyFilters();
         });
+    }
+
+    private void fetchData() {
+        progressBar.setVisibility(View.VISIBLE);
+
+        locationsRepository.getAllLocations(new LocationsServiceCallBack() {
+            @Override
+            public void onSuccess(DisciplinesResponse response) {
+                progressBar.setVisibility(View.GONE);
+                classesForDiscipline = mapResponseToClasses(response);
+                setupSedeOptions();
+                applyFilters();
+
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(DisciplineClassesActivity.this, "Error cargando datos: " + error.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void setupSedeOptions() {
+        List<String> sedeOptions = new ArrayList<>();
+        sedeOptions.add("Todas");
+        Set<String> uniques = new LinkedHashSet<>();
+        for (Class c : classesForDiscipline) {
+            String sede = c.getGymName();
+            if (sede == null || sede.trim().isEmpty()) sede = "Sin sede";
+            uniques.add(sede);
+        }
+        sedeOptions.addAll(uniques);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sedeOptions);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spSede.setAdapter(adapter);
+    }
+
+    private ArrayList<Class> mapResponseToClasses(DisciplinesResponse response) {
+        ArrayList<Class> list = new ArrayList<>();
+        if (response == null || response.getData() == null) return list;
+
+        String selectedDiscipline = getIntent().getStringExtra(EXTRA_DISCIPLINE_NAME);
+
+        for (DisciplineData item : response.getData()) {
+            if (selectedDiscipline != null && !selectedDiscipline.equals(item.getDisciplineName())) {
+                continue;
+            }
+            Class c = new Class();
+            c.setMaxParticipants(item.getClassMaxParticipants());
+            c.setScheduledAt(item.getClassScheduledAt());
+            c.setDisciplineName(item.getDisciplineName());
+            c.setGymName(item.getGymName());
+            c.setProfessorFirstName(item.getProfessorName()); // tu API trae "nombre apellido" en un solo campo
+            list.add(c);
+        }
+        return list;
     }
 
     private void applyFilters() {
         filteredClasses.clear();
         for (Class c : classesForDiscipline) {
             if (selectedSede != null) {
-                String sede = c.getFullGymInfo();
-                if (sede == null || sede.trim().isEmpty()) sede = "Sin sede";
-                if (!selectedSede.equals(sede)) continue;
-            }
-            if (selectedDate != null) {
+                String sede = c.getGymName();
+                if (sede == null || sede.trim().isEmpty())
+                    sede = "Sin sede";
+
+                if (!selectedSede.equals(sede)) continue; }
+
+            if (selectedDateFrom != null || selectedDateTo != null) {
                 String sched = c.getScheduledAt();
-                if (sched == null || sched.length() < 10) continue;
-                String datePart = sched.substring(0, 10); // yyyy-MM-dd
-                // Si el formato no coincide, intentar parsear y re-formatear
-                if (!datePart.equals(selectedDate)) {
-                    try {
-                        datePart = onlyDate.format(inputDateTime.parse(sched));
-                    } catch (ParseException ignored) {}
-                    if (!selectedDate.equals(datePart)) continue;
+
+                try {
+                    Date schedDate = inputDateTime.parse(sched);
+
+                    if (selectedDateFrom != null && selectedDateTo != null){
+                        Date from = onlyDate.parse(selectedDateFrom);
+                        Date to = onlyDate.parse(selectedDateTo);
+                        if (schedDate.before(from) || schedDate.after(to)){
+                            continue; // entre las fechas
+                        }
+                    }
+                    else if (selectedDateFrom != null) {
+                        Date from = onlyDate.parse(selectedDateFrom);
+                        if (schedDate.before(from)) {
+                            continue; // antes de la fecha "desde"
+                        }
+                    } else {
+                        Date to = onlyDate.parse(selectedDateTo);
+                        if (schedDate.after(to)) {
+                            continue; // después de la fecha "hasta"
+                        }
+                    }
+
+
+                } catch (ParseException e) {
+                    continue;
                 }
             }
             filteredClasses.add(c);
@@ -190,8 +283,8 @@ public class DisciplineClassesActivity extends AppCompatActivity implements Clas
     public void onClassClick(Class classItem) {
         Toast.makeText(this,
                 "Clase: " + classItem.getDisciplineName() +
-                        "\nProfesor: " + classItem.getFullProfessorName() +
-                        "\nGimnasio: " + classItem.getFullGymInfo() +
+                        "\nProfesor: " + classItem.getProfessorFirstName() +
+                        "\nGimnasio: " + classItem.getGymName() +
                         "\nFecha: " + classItem.getScheduledAt() +
                         "\nParticipantes máx: " + classItem.getMaxParticipants(),
                 Toast.LENGTH_LONG).show();

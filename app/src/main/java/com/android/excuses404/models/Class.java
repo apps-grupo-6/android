@@ -11,9 +11,6 @@ public class Class implements Parcelable {
     @SerializedName("professor_first_name")
     private String professorFirstName;
 
-    @SerializedName("professor_last_name")
-    private String professorLastName;
-
     @SerializedName("gym_name")
     private String gymName;
 
@@ -36,11 +33,10 @@ public class Class implements Parcelable {
     public Class() {}
 
     // Constructor con parámetros principales
-    public Class(String classId, String professorFirstName, String professorLastName,
+    public Class(String classId, String professorFirstName,
                  String gymName, String gymCity, String disciplineName, String scheduledAt, int maxParticipants) {
         this.classId = classId;
         this.professorFirstName = professorFirstName;
-        this.professorLastName = professorLastName;
         this.gymName = gymName;
         this.gymCity = gymCity;
         this.disciplineName = disciplineName;
@@ -49,29 +45,15 @@ public class Class implements Parcelable {
     }
 
     // Getters
-    public String getClassId() { return classId; }
     public String getProfessorFirstName() { return professorFirstName; }
-    public String getProfessorLastName() { return professorLastName; }
     public String getGymName() { return gymName; }
-    public String getGymCity() { return gymCity; }
-    public String getGymAddress() { return gymAddress; }
     public String getDisciplineName() { return disciplineName; }
     public String getScheduledAt() { return scheduledAt; }
     public int getMaxParticipants() { return maxParticipants; }
 
-    // Métodos de conveniencia
-    public String getFullProfessorName() {
-        return professorFirstName + " " + professorLastName;
-    }
-
-    public String getFullGymInfo() {
-        return gymName + " - " + gymCity;
-    }
-
     // Setters
     public void setClassId(String classId) { this.classId = classId; }
     public void setProfessorFirstName(String professorFirstName) { this.professorFirstName = professorFirstName; }
-    public void setProfessorLastName(String professorLastName) { this.professorLastName = professorLastName; }
     public void setGymName(String gymName) { this.gymName = gymName; }
     public void setGymCity(String gymCity) { this.gymCity = gymCity; }
     public void setGymAddress(String gymAddress) { this.gymAddress = gymAddress; }
@@ -83,7 +65,6 @@ public class Class implements Parcelable {
     protected Class(Parcel in) {
         classId = in.readString();
         professorFirstName = in.readString();
-        professorLastName = in.readString();
         gymName = in.readString();
         gymCity = in.readString();
         gymAddress = in.readString();
@@ -113,7 +94,6 @@ public class Class implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(classId);
         dest.writeString(professorFirstName);
-        dest.writeString(professorLastName);
         dest.writeString(gymName);
         dest.writeString(gymCity);
         dest.writeString(gymAddress);

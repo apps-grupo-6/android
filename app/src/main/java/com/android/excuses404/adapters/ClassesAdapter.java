@@ -80,8 +80,8 @@ public class ClassesAdapter extends RecyclerView.Adapter<ClassesAdapter.ClassVie
 
                 // Usar valores por defecto si algún campo es null
                 String disciplineName = classItem.getDisciplineName() != null ? classItem.getDisciplineName() : "N/A";
-                String professorName = classItem.getFullProfessorName() != null ? classItem.getFullProfessorName() : "N/A";
-                String gymInfo = classItem.getFullGymInfo() != null ? classItem.getFullGymInfo() : "N/A";
+                String professorName = classItem.getProfessorFirstName() != null ? classItem.getProfessorFirstName() : "N/A";
+                String gymInfo = classItem.getGymName() != null ? classItem.getGymName() : "N/A";
                 String scheduledAt = classItem.getScheduledAt() != null ? classItem.getScheduledAt() : "N/A";
 
                 tvDiscipline.setText("Disciplina: " + disciplineName);
