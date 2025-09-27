@@ -123,7 +123,7 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private void handleLogout() {
-        tokenRepository.clearToken();
+        tokenRepository.clearAll();
         Toast.makeText(this, "Sesión cerrada", Toast.LENGTH_SHORT).show();
         redirectToAuth();
     }
