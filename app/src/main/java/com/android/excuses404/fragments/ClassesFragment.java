@@ -20,6 +20,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class ClassesFragment extends Fragment {
 
     private AttendanceViewModel vm;
@@ -27,9 +30,11 @@ public class ClassesFragment extends Fragment {
 
     public ClassesFragment() { super(R.layout.classes_fragment); } // <— antes home_fragment
 
-    @Override public void onCreate(@Nullable Bundle savedInstanceState) {
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        vm = new ViewModelProvider(requireActivity()).get(AttendanceViewModel.class);
+
+        vm = new ViewModelProvider(this).get(AttendanceViewModel.class);
     }
 
     @Override public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
