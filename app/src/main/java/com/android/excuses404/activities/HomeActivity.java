@@ -4,9 +4,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.excuses404.R;
+import com.android.excuses404.core.repository.TokenRepository;
 import com.android.excuses404.adapters.ClassesAdapter;
 import com.android.excuses404.adapters.DisciplineAdapter;
 import com.android.excuses404.data.api.model.ClassesResponse;
@@ -34,7 +39,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 @AndroidEntryPoint
-public class HomeActivity extends AppCompatActivity implements ClassesAdapter.OnClassClickListener, DisciplineAdapter.OnDisciplineClickListener {
+public class HomeActivity extends AppCompatActivity
+        implements ClassesAdapter.OnClassClickListener, DisciplineAdapter.OnDisciplineClickListener {
 
     private static final String TAG = "HomeActivity";
     private static final String PREFS_NAME = "UserPrefs";
@@ -54,8 +60,6 @@ public class HomeActivity extends AppCompatActivity implements ClassesAdapter.On
     private boolean showingDisciplines = true;
     private String currentDiscipline = null;
 
-    private static final String TAG = "HomeActivity";
-
     @Inject
     TokenRepository tokenRepository;
 
@@ -66,6 +70,69 @@ public class HomeActivity extends AppCompatActivity implements ClassesAdapter.On
         initViews();
         setupRecyclerView();
         loadClassesCatalog();
+
+        if (tokenRepository.hasToken()) {
+            String token = tokenRepository.getToken();
+            int userId = tokenRepository.getUserId();
+        } else {
+            Log.w(TAG, "No hay token almacenado");
+        }
+
+        setupProfileMenu();
+    }
+
+    private void setupProfileMenu() {
+        ImageView profileIcon = findViewById(R.id.ivProfile);
+        profileIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showProfileMenu(v);
+            }
+        });
+    }
+
+    private void showProfileMenu(View anchor) {
+        PopupMenu popup = new PopupMenu(this, anchor);
+        popup.getMenuInflater().inflate(R.menu.profile_menu, popup.getMenu());
+
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                int itemId = item.getItemId();
+                if (itemId == R.id.menu_my_profile) {
+                    handleMyProfile();
+                    return true;
+                } else if (itemId == R.id.menu_logout) {
+                    handleLogout();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        popup.show();
+    }
+
+    private void handleMyProfile() {
+        boolean hasToken = tokenRepository.hasToken();
+        String token = tokenRepository.getToken();
+        boolean isLoggedIn = tokenRepository.isLoggedIn();
+
+        Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
+        startActivity(intent);
+    }
+
+    private void handleLogout() {
+        tokenRepository.clearAll();
+        Toast.makeText(this, "Sesión cerrada", Toast.LENGTH_SHORT).show();
+        redirectToAuth();
+    }
+
+    private void redirectToAuth() {
+        Intent intent = new Intent(HomeActivity.this, AuthActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void initViews() {
@@ -79,7 +146,8 @@ public class HomeActivity extends AppCompatActivity implements ClassesAdapter.On
                 btnBack.setOnClickListener(v -> returnToDisciplines());
             }
             // Verificar que todos los elementos fueron encontrados
-            if (recyclerView == null || progressBar == null || tvErrorMessage == null || tvTitle == null || btnBack == null) {
+            if (recyclerView == null || progressBar == null || tvErrorMessage == null || tvTitle == null
+                    || btnBack == null) {
                 Log.e(TAG, "Error: No se pudieron encontrar todos los elementos del layout");
                 Toast.makeText(this, "Error de interfaz: elementos faltantes", Toast.LENGTH_LONG).show();
                 finish();
@@ -104,12 +172,15 @@ public class HomeActivity extends AppCompatActivity implements ClassesAdapter.On
     private void showDisciplines() {
         showingDisciplines = true;
         currentDiscipline = null;
-        if (btnBack != null) btnBack.setVisibility(View.GONE);
-        if (tvTitle != null) tvTitle.setText("Disciplinas");
+        if (btnBack != null)
+            btnBack.setVisibility(View.GONE);
+        if (tvTitle != null)
+            tvTitle.setText("Nuestras Disciplinas");
         java.util.Set<String> set = new java.util.LinkedHashSet<>();
         for (Class c : allClasses) {
             String d = c.getDisciplineName();
-            if (d == null || d.trim().isEmpty()) d = "Sin disciplina";
+            if (d == null || d.trim().isEmpty())
+                d = "Sin disciplina";
             set.add(d);
         }
         disciplineAdapter.setDisciplines(new java.util.ArrayList<>(set));
@@ -123,7 +194,8 @@ public class HomeActivity extends AppCompatActivity implements ClassesAdapter.On
     private void loadClassesCatalog() {
         showLoading();
 
-        locationsRepository.getAllLocations(new LocationsServiceCallBack() {
+        String token = getJwtToken();
+        locationsRepository.getAllLocations(token, new LocationsServiceCallBack() {
             @Override
             public void onSuccess(DisciplinesResponse response) {
                 allClasses = mapResponseToClassList(response);
@@ -145,15 +217,16 @@ public class HomeActivity extends AppCompatActivity implements ClassesAdapter.On
 
     private List<Class> mapResponseToClassList(DisciplinesResponse resp) {
         List<Class> list = new ArrayList<>();
-        if (resp == null || resp.getData() == null) return list;
+        if (resp == null || resp.getData() == null)
+            return list;
 
         for (DisciplineData d : resp.getData()) {
             Class c = new Class();
-            c.setDisciplineName(d.getDisciplineName());     
+            c.setDisciplineName(d.getDisciplineName());
             c.setScheduledAt(d.getClassScheduledAt());
             c.setMaxParticipants(d.getClassMaxParticipants());
             c.setGymName(d.getGymName());
-            c.setProfessorFirstName(d.getProfessorName());    // backend ya concatena
+            c.setProfessorFirstName(d.getProfessorName()); // backend ya concatena
             list.add(c);
         }
         return list;
@@ -182,14 +255,23 @@ public class HomeActivity extends AppCompatActivity implements ClassesAdapter.On
     }
 
     private String getJwtToken() {
-        // Primero intenta obtener el token de las preferencias de UserPrefs (original)
+        if (tokenRepository.hasToken()) {
+            String token = tokenRepository.getToken();
+            Log.d(TAG, "Token obtenido del TokenRepository: " + (token != null ? "SÍ" : "NO"));
+            return token;
+        }
+
+        Log.d(TAG, "No hay token en TokenRepository, usando fallback");
+
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String token = prefs.getString(KEY_JWT_TOKEN, null);
+        Log.d(TAG, "Token en UserPrefs: " + (token != null ? "SÍ" : "NO"));
 
         // Si no lo encuentra, intenta con USER_DATA (usado en LoginFragment)
         if (token == null) {
-            prefs = getSharedPreferences("userData", MODE_PRIVATE);  // USER_DATA constant
+            prefs = getSharedPreferences("userData", MODE_PRIVATE); // USER_DATA constant
             token = prefs.getString(KEY_JWT_TOKEN, null);
+            Log.d(TAG, "Token en userData: " + (token != null ? "SÍ" : "NO"));
         }
 
         // Si aún es null, proporciona un token ficticio para desarrollo
@@ -229,7 +311,8 @@ public class HomeActivity extends AppCompatActivity implements ClassesAdapter.On
 
     @Override
     public void onClassClick(Class classItem) {
-        if (classItem == null) return;
+        if (classItem == null)
+            return;
         Toast.makeText(this,
                 "Clase: " + classItem.getDisciplineName() +
                         "\nProfesor: " + classItem.getProfessorFirstName() +
@@ -245,8 +328,10 @@ public class HomeActivity extends AppCompatActivity implements ClassesAdapter.On
         java.util.ArrayList<Class> filtered = new java.util.ArrayList<>();
         for (Class c : allClasses) {
             String d = c.getDisciplineName();
-            if (d == null || d.trim().isEmpty()) d = "Sin disciplina";
-            if (d.equals(disciplineName)) filtered.add(c);
+            if (d == null || d.trim().isEmpty())
+                d = "Sin disciplina";
+            if (d.equals(disciplineName))
+                filtered.add(c);
         }
         Intent intent = new Intent(this, DisciplineClassesActivity.class);
         intent.putExtra(DisciplineClassesActivity.EXTRA_DISCIPLINE_NAME, disciplineName);

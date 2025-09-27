@@ -22,8 +22,9 @@ public class LocationsRepository {
         this.apiService = apiService;
     }
 
-    public void getAllLocations(LocationsServiceCallBack callBack) {
-        apiService.get_all_disciplines().enqueue(new Callback<DisciplinesResponse>() {
+    public void getAllLocations(String token, LocationsServiceCallBack callBack) {
+        String authHeader = "Bearer " + token;
+        apiService.get_all_disciplines(authHeader).enqueue(new Callback<DisciplinesResponse>() {
             @Override
             public void onResponse(Call<DisciplinesResponse> call, Response<DisciplinesResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {

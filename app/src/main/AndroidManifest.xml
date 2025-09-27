@@ -43,15 +43,12 @@
             android:exported="false"
             android:theme="@style/Theme.Excuses404" />
 
-        <!-- Ejemplos antiguos comentados correctamente
         <activity
-            android:name=".PokemonDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".PokemonMainActivity"
+            android:name=".activities.ProfileActivity"
             android:exported="false"
-            android:parentActivityName=".MainActivity" />
-        -->
+            android:theme="@style/Theme.Excuses404"
+            android:parentActivityName=".activities.HomeActivity" />
+
     </application>
 
 </manifest>

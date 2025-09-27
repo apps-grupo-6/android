@@ -4,6 +4,8 @@ import com.android.excuses404.data.api.ClassesApiService;
 import com.android.excuses404.data.api.DisciplinesApiService;
 import com.android.excuses404.data.api.UserApiService;
 import com.android.excuses404.data.repository.LocationsRepository;
+import com.android.excuses404.services.UserService;
+import com.android.excuses404.services.UserServiceImpl;
 
 import javax.inject.Singleton;
 
@@ -12,6 +14,7 @@ import dagger.Provides;
 import dagger.hilt.InstallIn;
 import dagger.hilt.components.SingletonComponent;
 import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -27,18 +30,12 @@ public class NetworkModule {
 
     @Provides
     @Singleton
-    Retrofit provideRetrofit(OkHttpClient client){
+    Retrofit provideRetrofit(OkHttpClient client) {
         return new Retrofit.Builder()
                 .baseUrl("http://10.0.2.2:5000/api/")
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
-    }
-
-    @Provides
-    @Singleton
-    UserApiService provideUserApiService(Retrofit retrofit) {
-        return retrofit.create(UserApiService.class);
     }
 
     @Provides
@@ -51,5 +48,17 @@ public class NetworkModule {
     @Singleton
     public DisciplinesApiService provideDisciplinesApiService(Retrofit retrofit) {
         return retrofit.create(DisciplinesApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    UserApiService provideUserApiService(Retrofit retrofit) {
+        return retrofit.create(UserApiService.class);
+    }
+
+    @Provides
+    @Singleton
+    UserService provideUserService(UserServiceImpl userServiceImpl) {
+        return userServiceImpl;
     }
 }

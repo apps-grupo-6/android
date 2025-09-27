@@ -1,16 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:orientation="vertical">
 
+    <!-- Navbar -->
     <LinearLayout
+        android:id="@+id/navbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="64dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginBottom="12dp">
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp">
 
         <Button
             android:id="@+id/btn_back"
@@ -19,18 +25,85 @@
             android:text="Volver"
             android:visibility="gone"/>
 
+        <!-- Título de la app -->
         <TextView
-            android:id="@+id/tv_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="center"
-            android:text="Disciplinas"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black" />
+            android:text="Excuses 404"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- Ícono de perfil -->
+        <ImageView
+            android:id="@+id/ivProfile"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_person_24"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="4dp"
+            app:tint="?attr/colorOnPrimary" />
+
     </LinearLayout>
 
+    <!-- Banner del gimnasio -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="120dp">
+        
+        <ImageView
+            android:id="@+id/iv_gym_banner"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/gym_banner"
+            android:contentDescription="Banner del gimnasio" />
+        
+        <!-- Texto del banner -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="16dp"
+            android:orientation="vertical">
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="¡Bienvenido de vuelta!"
+                android:textColor="@android:color/white"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:shadowColor="#FF000000"
+                android:shadowDx="3"
+                android:shadowDy="3"
+                android:shadowRadius="6" />
+                
+        </LinearLayout>
+            
+    </FrameLayout>
+
+    <!-- Contenido principal -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:padding="16dp">
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="12dp" />
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_clases"
         android:layout_width="match_parent"
@@ -53,5 +126,7 @@
         android:text="Error al cargar"
         android:textColor="@android:color/holo_red_dark"
         android:visibility="gone" />
+
+    </LinearLayout>
 
 </LinearLayout>

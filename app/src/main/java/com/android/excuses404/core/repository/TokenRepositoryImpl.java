@@ -64,7 +64,8 @@ public class TokenRepositoryImpl implements TokenRepository {
 
     @Override
     public boolean hasToken() {
-        return encryptedSharedPreferences.contains(KEY_TOKEN);
+        String token = encryptedSharedPreferences.getString(KEY_TOKEN, null);
+        return token != null && !token.trim().isEmpty();
     }
 
     @Override
